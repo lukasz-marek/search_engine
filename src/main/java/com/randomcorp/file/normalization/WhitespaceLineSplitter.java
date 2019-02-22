@@ -11,6 +11,8 @@ public class WhitespaceLineSplitter implements LineSplitter {
 
     @Override
     public List<String> split(String line) {
-        return Arrays.stream(line.split("\\s")).collect(Collectors.toList());
+        return Arrays.stream(line.trim()
+                .split("\\s")).filter(string -> string.length() > 0)
+                .collect(Collectors.toList());
     }
 }

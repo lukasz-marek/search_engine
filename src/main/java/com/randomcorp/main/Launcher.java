@@ -12,6 +12,8 @@ import com.randomcorp.search.Query;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 public class Launcher {
     public static void main(String[] args) {
@@ -28,15 +30,17 @@ public class Launcher {
 
         FileImage img = null;
         for(File f : listOfFiles){
-            try {
-                img = FileImage.of(f, registry, new WhitespaceLineSplitter());//.getWordIndexes();
-            } catch (IOException e) {
-                e.printStackTrace();
+            if(f.isFile() && !f.isHidden()) {
+                try {
+                    img = FileImage.of(f, registry, new WhitespaceLineSplitter());//.getWordIndexes();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
-        final Query query = new Query(Arrays.asList(registry.getRegisteredWord("Lorem"), registry.getRegisteredWord("ipsum")));
+        final Query query = new Query(Arrays.asList(registry.getRegisteredWord("Lorem"),registry.getRegisteredWord("ipsum")));
         Matcher m = new LongestCommonSubSequenceMatcher();
-        System.out.println(m.search(img, query));
+        System.out.println(m.search(img, query).getMatches().values().stream().flatMap(List::stream).map(List::size).max(Comparator.naturalOrder()));
     }
 }
