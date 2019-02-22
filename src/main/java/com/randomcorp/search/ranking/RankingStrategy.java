@@ -1,7 +1,7 @@
 package com.randomcorp.search.ranking;
 
-import com.randomcorp.search.Query;
-import com.randomcorp.search.SearchResult;
+import com.randomcorp.search.matching.Query;
+import com.randomcorp.search.matching.SearchResult;
 
 public interface RankingStrategy {
 

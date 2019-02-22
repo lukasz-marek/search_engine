@@ -1,4 +1,4 @@
-package com.randomcorp.search;
+package com.randomcorp.search.matching;
 
 import com.randomcorp.processing.vocabulary.Word;
 

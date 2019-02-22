@@ -5,9 +5,9 @@ import com.randomcorp.file.normalization.WhitespaceLineSplitter;
 import com.randomcorp.processing.vocabulary.VocabularyRegistry;
 import com.randomcorp.processing.vocabulary.VocabularyRegistryImpl;
 import com.randomcorp.processing.vocabulary.WordNormalizer;
-import com.randomcorp.search.LongestCommonSubSequenceMatcher;
-import com.randomcorp.search.Matcher;
-import com.randomcorp.search.Query;
+import com.randomcorp.search.matching.SequenceIdentifyingMatcher;
+import com.randomcorp.search.matching.Matcher;
+import com.randomcorp.search.matching.Query;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,14 +33,15 @@ public class Launcher {
             if(f.isFile() && !f.isHidden()) {
                 try {
                     img = FileImage.of(f, registry, new WhitespaceLineSplitter());//.getWordIndexes();
+                    final Query query = new Query(Arrays.asList(registry.getRegisteredWord("Lorem"),registry.getRegisteredWord("ipsum")));
+                    Matcher m = new SequenceIdentifyingMatcher();
+                    m.search(img, query);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
 
-        final Query query = new Query(Arrays.asList(registry.getRegisteredWord("Lorem"),registry.getRegisteredWord("ipsum")));
-        Matcher m = new LongestCommonSubSequenceMatcher();
-        System.out.println(m.search(img, query).getMatches().values().stream().flatMap(List::stream).map(List::size).max(Comparator.naturalOrder()));
+
     }
 }
