@@ -22,7 +22,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
         }
 
         final List<MatchingReport> matchData = new ArrayList<>();
-        for(int i = 0; i < query.getWords().size() - 1; i++){
+        for(int i = 0; i < query.getWords().size(); i++){
             final MatchingReport match = match(i, queriedIndexes, query);
             matchData.add(match);
         }
@@ -38,13 +38,22 @@ public class SequenceIdentifyingMatcher implements Matcher {
 
         int matchLength = 0;
         int matchSize = 0;
-        for(int i = 0; i < matchingWords.size() - 1; i++){
+        for(int i = 0; i < matchingWords.size(); i++){
             final Set<Long> current = matchingWords.get(i);
-            final Set<Long> next = matchingWords.get(i + 1);
             matchSize = current.size();
+
+            if (current.isEmpty()){
+                break;
+            }
+
+            if (i == matchingWords.size() - 1){
+                matchLength += 1;
+                break;
+            }
+
+            final Set<Long> next = matchingWords.get(i + 1);
             final Set<Long> successors = getSuccessors(current);
             next.retainAll(successors);
-
 
             if (next.isEmpty()){
                 break;

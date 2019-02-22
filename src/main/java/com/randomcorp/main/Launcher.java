@@ -36,7 +36,7 @@ public class Launcher {
             if(f.isFile() && !f.isHidden()) {
                 try {
                     img = FileImage.of(f, registry, new WhitespaceLineSplitter());//.getWordIndexes();
-                    final Query query = new Query(Arrays.asList(registry.getRegisteredWord("stronę")));
+                    final Query query = new Query(Arrays.asList(registry.getRegisteredWord("Polska")));
                     Matcher m = new SequenceIdentifyingMatcher();
                     final SearchResult searchResult = m.search(img, query);
                     final RankingResult rankingResult = new DefaultRankingStrategy().rank(searchResult, query);
