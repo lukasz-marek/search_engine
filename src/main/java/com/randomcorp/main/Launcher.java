@@ -66,7 +66,6 @@ public class Launcher {
             }
 
             performSearch(input, registry, searchEngine, rankingStrategy, fileImages);
-            System.gc();
         } while (true);
 
         inputSource.close();
