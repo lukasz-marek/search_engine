@@ -3,10 +3,7 @@ package com.randomcorp.search;
 import com.randomcorp.file.image.FileImage;
 import com.randomcorp.processing.vocabulary.Word;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This search engine uses an algorithm based on longest common substring.
@@ -22,7 +19,8 @@ public class LongestCommonSubSequenceMatcher implements Matcher {
             mergeMatches(matches, matchesPart);
         }
 
-        return new SearchResult(matches);
+        matches.replaceAll((k, v) -> Collections.unmodifiableList(v));
+        return new SearchResult(Collections.unmodifiableMap(matches));
     }
 
     private void mergeMatches(Map<Integer, List<List<Word>>> result, Map<Integer, List<List<Word>>> part){
@@ -51,7 +49,7 @@ public class LongestCommonSubSequenceMatcher implements Matcher {
                     }
 
                     matches.putIfAbsent(length, new ArrayList<>());
-                    matches.get(length).add(match);
+                    matches.get(length).add(Collections.unmodifiableList(match));
 
                 } else if (m != 0 && n != 0) {
                     cache[m][n] = Math.max(cache[m][n - 1], cache[m - 1][n]);

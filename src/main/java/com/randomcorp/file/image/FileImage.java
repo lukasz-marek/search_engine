@@ -12,11 +12,24 @@ public class FileImage {
 
     private final List<List<Word>> lines;
 
-    private final Set<Word> words;
+    private final Map<Word, Set<Long>> wordIndexes;
 
     private FileImage(List<List<Word>> lines) {
         this.lines = lines;
-        this.words = Collections.unmodifiableSet(lines.stream().flatMap(List::stream).collect(Collectors.toSet()));
+
+        final Map<Word, Set<Long>> indexes = new HashMap<>();
+        long index = 0;
+        for(List<Word> line : lines){
+            for(Word word : line){
+                if(!indexes.containsKey(word)){
+                    indexes.put(word, new HashSet<>());
+                }
+                indexes.get(word).add(index);
+                index++;
+            }
+        }
+        indexes.replaceAll((k, v) -> Collections.unmodifiableSet(v));
+        this.wordIndexes = Collections.unmodifiableMap(indexes);
     }
 
 
@@ -41,7 +54,7 @@ public class FileImage {
         return lines;
     }
 
-    public Set<Word> getWords() {
-        return words;
+    public Map<Word, Set<Long>> getWordIndexes() {
+        return wordIndexes;
     }
 }
