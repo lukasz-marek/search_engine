@@ -16,13 +16,15 @@ public class FileImage {
         this.wordIndexes = wordIndexes;
     }
 
+    public Set<Long> getIndexesForWord(Word word){
+        return Collections.unmodifiableSet(this.wordIndexes.getOrDefault(word, Collections.emptySet()));
+    }
+
     public static FileImage of(File textFile, VocabularyRegistryImpl registry, LineSplitter lineSplitter) throws IOException {
-        final BufferedReader reader = new BufferedReader(new FileReader(textFile));
-
-
-        Map<Word, Set<Long>> wordIndexes = new HashMap<>();
+        final Map<Word, Set<Long>> wordIndexes = new HashMap<>();
         long wordIndex = 0;
         String line = null;
+        final BufferedReader reader = new BufferedReader(new FileReader(textFile));
         while ((line = reader.readLine()) != null){
             final List<String> seperateWords = lineSplitter.split(line);
             final List<Word> registeredWords = seperateWords.stream()
