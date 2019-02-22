@@ -9,7 +9,7 @@ public class VocabularyRegistryImplTest {
     @Test
     public void shouldReturnUnknownWord(){
         // given
-        final VocabularyRegistryImpl registry = new VocabularyRegistryImpl(word -> word);
+        final VocabularyRegistryImpl registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
 
         final String unknownWord = "Yoda";
         // when
@@ -21,7 +21,7 @@ public class VocabularyRegistryImplTest {
     @Test
     public void shouldReturnTheSameWordTwice(){
         // given
-        final VocabularyRegistryImpl registry = new VocabularyRegistryImpl(word -> word);
+        final VocabularyRegistryImpl registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
 
         final String newWord = "Yoda";
         // when
@@ -34,7 +34,7 @@ public class VocabularyRegistryImplTest {
     @Test
     public void shouldReturnDistinctWords(){
         // given
-        final VocabularyRegistryImpl registry = new VocabularyRegistryImpl(word -> word);
+        final VocabularyRegistryImpl registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
 
         final String newWord1 = "Yoda";
         final String newWord2 = "Dooku";
@@ -49,7 +49,7 @@ public class VocabularyRegistryImplTest {
     @Test
     public void shouldReturnStoredWord(){
         // given
-        final VocabularyRegistryImpl registry = new VocabularyRegistryImpl(word -> word);
+        final VocabularyRegistryImpl registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
 
         final String newWord = "Yoda";
         // when

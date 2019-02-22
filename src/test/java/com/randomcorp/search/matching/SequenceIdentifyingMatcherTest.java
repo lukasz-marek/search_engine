@@ -3,6 +3,7 @@ package com.randomcorp.search.matching;
 import com.randomcorp.file.image.FileImage;
 import com.randomcorp.file.image.FileImageTest;
 import com.randomcorp.file.normalization.WhitespaceLineSplitter;
+import com.randomcorp.processing.vocabulary.IdentityWordNormalizer;
 import com.randomcorp.processing.vocabulary.VocabularyRegistry;
 import com.randomcorp.processing.vocabulary.VocabularyRegistryImpl;
 import org.junit.Assert;
@@ -23,7 +24,7 @@ public class SequenceIdentifyingMatcherTest {
         //given
         final ClassLoader classLoader = FileImageTest.class.getClassLoader();
         final File file = new File(classLoader.getResource(FILE_NAME).getFile());
-        final VocabularyRegistry registry = new VocabularyRegistryImpl(word -> word);
+        final VocabularyRegistry registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
         final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
 
         final String queryString = "You must see this droid safely delivered to him on Alderaan.";
@@ -46,7 +47,7 @@ public class SequenceIdentifyingMatcherTest {
         //given
         final ClassLoader classLoader = FileImageTest.class.getClassLoader();
         final File file = new File(classLoader.getResource(FILE_NAME).getFile());
-        final VocabularyRegistry registry = new VocabularyRegistryImpl(word -> word);
+        final VocabularyRegistry registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
         final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
 
         final String queryString = "Kenobi.";
@@ -69,7 +70,7 @@ public class SequenceIdentifyingMatcherTest {
         //given
         final ClassLoader classLoader = FileImageTest.class.getClassLoader();
         final File file = new File(classLoader.getResource(FILE_NAME).getFile());
-        final VocabularyRegistry registry = new VocabularyRegistryImpl(word -> word);
+        final VocabularyRegistry registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
         final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
 
         final String queryString = "Sith";
@@ -92,7 +93,7 @@ public class SequenceIdentifyingMatcherTest {
         //given
         final ClassLoader classLoader = FileImageTest.class.getClassLoader();
         final File file = new File(classLoader.getResource(FILE_NAME).getFile());
-        final VocabularyRegistry registry = new VocabularyRegistryImpl(word -> word);
+        final VocabularyRegistry registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
         final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
 
         final String queryString = "droid delivered"; // in test file: "droid safely delivered"
@@ -115,7 +116,7 @@ public class SequenceIdentifyingMatcherTest {
         //given
         final ClassLoader classLoader = FileImageTest.class.getClassLoader();
         final File file = new File(classLoader.getResource(FILE_NAME).getFile());
-        final VocabularyRegistry registry = new VocabularyRegistryImpl(word -> word);
+        final VocabularyRegistry registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
         final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
 
         final String queryString = "it. You must"; // in testfile: "it.\n You must"
