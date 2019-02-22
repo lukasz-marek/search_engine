@@ -1,6 +1,6 @@
 package com.randomcorp.processing.vocabulary;
 
-interface VocabularyRegistry {
+public interface VocabularyRegistry {
 
     Word UNKNOWN_WORD = new Word(-1L, "");
 

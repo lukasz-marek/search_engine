@@ -1,6 +1,7 @@
 package com.randomcorp.file.image;
 
 import com.randomcorp.file.normalization.LineSplitter;
+import com.randomcorp.processing.vocabulary.VocabularyRegistry;
 import com.randomcorp.processing.vocabulary.VocabularyRegistryImpl;
 import com.randomcorp.processing.vocabulary.Word;
 
@@ -33,7 +34,7 @@ public final class FileImage {
     }
 
 
-    public static FileImage of(File textFile, VocabularyRegistryImpl registry, LineSplitter lineSplitter) throws IOException {
+    public static FileImage of(File textFile, VocabularyRegistry registry, LineSplitter lineSplitter) throws IOException {
         final List<List<Word>> lines = new ArrayList<>();
 
         String line = null;
