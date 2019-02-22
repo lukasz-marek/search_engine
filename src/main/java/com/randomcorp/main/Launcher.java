@@ -55,6 +55,10 @@ public class Launcher {
             System.out.print(PROMPT);
             input = inputSource.nextLine().trim();
 
+            if(input.length() == 0){
+                continue;
+            }
+
             if (input.equals(EXIT_COMMAND)) {
                 break;
             }
