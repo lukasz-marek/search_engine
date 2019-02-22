@@ -28,33 +28,12 @@ public class Launcher {
 
     private final static long RESULT_LIMIT = 10;
 
-
     private final static LineSplitter LINE_SPLITTER = new WhitespaceLineSplitter();
 
     public static void main(String[] args) {
 
-        if(args.length != 1){
-            System.err.println("A single argument (path to search directory) is expected.");
-            System.exit(-1);
-        }
-
-        final File searchDirectory = new File(args[0]);
-
-        if(!searchDirectory.exists()){
-            System.err.println(String.format("Path %s does not exist", args[0]));
-            System.exit(-2);
-        }
-
-        if(!searchDirectory.isDirectory()){
-            System.err.println(String.format("%s is not a directory", args[0]));
-            System.exit(-3);
-        }
-
+        final File searchDirectory = checkPreconditionsAndGetDirectory(args);
         final File[] contents = searchDirectory.listFiles();
-        if(contents == null){
-            System.err.println(String.format("%s is empty", args[0]));
-            System.exit(-4);
-        }
 
         final VocabularyRegistry registry = new VocabularyRegistryImpl(String::trim);
         final List<FileImage> fileImages = Arrays.stream(contents)
@@ -64,49 +43,85 @@ public class Launcher {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
+        System.out.format("%d files loaded\n", fileImages.size());
+
         final Matcher searchEngine = new SequenceIdentifyingMatcher();
         final RankingStrategy rankingStrategy = new DefaultRankingStrategy();
 
         final Scanner inputSource = new Scanner(System.in);
 
         String input = null;
-        do{
+        do {
             System.out.print(PROMPT);
             input = inputSource.nextLine().trim();
 
-            if(input.equals(EXIT_COMMAND)){
+            if (input.equals(EXIT_COMMAND)) {
                 break;
             }
-            final List<Word> queryContents = LINE_SPLITTER.split(input).stream()
-                    .map(registry::getRegisteredWord)
-                    .collect(Collectors.toList());
 
-            final Query query = new Query(queryContents);
-            final Map<String, Integer> rankingResults = new HashMap<>();
-            fileImages.forEach(fileImage -> {
-                final SearchResult searchResult = searchEngine.search(fileImage, query);
-                final RankingResult rankingResult = rankingStrategy.rank(searchResult, query);
-                rankingResults.put(fileImage.getName(), rankingResult.getValue());
-            });
+            performSearch(input, registry, searchEngine, rankingStrategy, fileImages);
 
-            final List<String> bestMatches = rankingResults.keySet()
-                    .stream().sorted((str1, str2) -> Integer.compare(rankingResults.get(str2), rankingResults.get(str1)))
-                    .limit(10L).collect(Collectors.toList());
-            for(String filename:bestMatches){
-                final String row = String.format("%s: %d%%", filename, rankingResults.get(filename));
-                System.out.println(row);
-            }
-
-        }while (true);
+        } while (true);
 
         inputSource.close();
     }
 
-    private static FileImage convert(File file, VocabularyRegistry vocabularyRegistry){
+    private static void performSearch(String input, VocabularyRegistry registry, Matcher searchEngine,
+                                      RankingStrategy rankingStrategy, List<FileImage> fileImages) {
+
+        final List<Word> queryContents = LINE_SPLITTER.split(input).stream()
+                .map(registry::getRegisteredWord)
+                .collect(Collectors.toList());
+
+        final Query query = new Query(queryContents);
+        final Map<String, Integer> rankingResults = new HashMap<>();
+        fileImages.forEach(fileImage -> {
+            final SearchResult searchResult = searchEngine.search(fileImage, query);
+            final RankingResult rankingResult = rankingStrategy.rank(searchResult, query);
+            rankingResults.put(fileImage.getName(), rankingResult.getValue());
+        });
+
+        final List<String> bestMatches = rankingResults.keySet()
+                .stream().sorted((str1, str2) -> Integer.compare(rankingResults.get(str2), rankingResults.get(str1)))
+                .limit(RESULT_LIMIT)
+                .collect(Collectors.toList());
+        for (String filename : bestMatches) {
+            System.out.format("%s: %d%%\n", filename, rankingResults.get(filename));
+        }
+    }
+
+    private static File checkPreconditionsAndGetDirectory(String[] args) {
+        if (args.length != 1) {
+            System.err.println("A single argument (path to search directory) is expected.");
+            System.exit(-1);
+        }
+
+        final File searchDirectory = new File(args[0]);
+
+        if (!searchDirectory.exists()) {
+            System.err.format("Path %s does not exist\n", args[0]);
+            System.exit(-2);
+        }
+
+        if (!searchDirectory.isDirectory()) {
+            System.err.format("%s is not a directory\n", args[0]);
+            System.exit(-3);
+        }
+
+        final File[] contents = searchDirectory.listFiles();
+        if (contents == null) {
+            System.err.format("%s is empty\n", args[0]);
+            System.exit(-4);
+        }
+
+        return searchDirectory;
+    }
+
+    private static FileImage convert(File file, VocabularyRegistry vocabularyRegistry) {
         try {
             return FileImage.of(file, vocabularyRegistry, LINE_SPLITTER);
         } catch (IOException e) {
-            System.err.println(String.format("Could not read file %s, ignoring.", file.getName()));
+            System.err.format("Could not read file %s, ignoring.\n", file.getName());
             return null;
         }
     }
