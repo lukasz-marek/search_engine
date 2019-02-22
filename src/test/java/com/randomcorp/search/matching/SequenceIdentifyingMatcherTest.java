@@ -12,7 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-public class SequenceIdentyfyingMatcherTest {
+public class SequenceIdentifyingMatcherTest {
 
     private SequenceIdentifyingMatcher matcher = new SequenceIdentifyingMatcher();
 
@@ -85,5 +85,50 @@ public class SequenceIdentyfyingMatcherTest {
         Assert.assertEquals(1, result.getMatches().size());
         Assert.assertEquals(0, result.getMatches().get(0).getMaxLength());
         Assert.assertEquals(0, result.getMatches().get(0).getNumberOfSequences());
+    }
+
+    @Test
+    public void shouldMatchWithGap() throws IOException {
+        //given
+        final ClassLoader classLoader = FileImageTest.class.getClassLoader();
+        final File file = new File(classLoader.getResource(FILE_NAME).getFile());
+        final VocabularyRegistry registry = new VocabularyRegistryImpl(word -> word);
+        final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
+
+        final String queryString = "droid delivered"; // in test file: "droid safely delivered"
+        final Query query = new Query(new WhitespaceLineSplitter().split(queryString)
+                .stream()
+                .map(registry::getRegisteredWord)
+                .collect(Collectors.toList()));
+
+        //when
+        final SearchResult result = matcher.search(fileImage, query);
+
+        //then
+        Assert.assertEquals(2, result.getMatches().size());
+        Assert.assertEquals(2, result.getMatches().get(0).getMaxLength());
+        Assert.assertEquals(1, result.getMatches().get(1).getMaxLength());
+    }
+
+    @Test
+    public void shouldIgnoreNewLine() throws IOException {
+        //given
+        final ClassLoader classLoader = FileImageTest.class.getClassLoader();
+        final File file = new File(classLoader.getResource(FILE_NAME).getFile());
+        final VocabularyRegistry registry = new VocabularyRegistryImpl(word -> word);
+        final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
+
+        final String queryString = "it. You must"; // in testfile: "it.\n You must"
+        final Query query = new Query(new WhitespaceLineSplitter().split(queryString)
+                .stream()
+                .map(registry::getRegisteredWord)
+                .collect(Collectors.toList()));
+
+        //when
+        final SearchResult result = matcher.search(fileImage, query);
+
+        //then
+        Assert.assertEquals(3, result.getMatches().size());
+        Assert.assertEquals(3, result.getMatches().get(0).getMaxLength());
     }
 }
