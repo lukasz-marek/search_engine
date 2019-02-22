@@ -5,9 +5,12 @@ import com.randomcorp.file.normalization.WhitespaceLineSplitter;
 import com.randomcorp.processing.vocabulary.VocabularyRegistry;
 import com.randomcorp.processing.vocabulary.VocabularyRegistryImpl;
 import com.randomcorp.processing.vocabulary.WordNormalizer;
+import com.randomcorp.search.matching.SearchResult;
 import com.randomcorp.search.matching.SequenceIdentifyingMatcher;
 import com.randomcorp.search.matching.Matcher;
 import com.randomcorp.search.matching.Query;
+import com.randomcorp.search.ranking.DefaultRankingStrategy;
+import com.randomcorp.search.ranking.RankingResult;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,9 +36,11 @@ public class Launcher {
             if(f.isFile() && !f.isHidden()) {
                 try {
                     img = FileImage.of(f, registry, new WhitespaceLineSplitter());//.getWordIndexes();
-                    final Query query = new Query(Arrays.asList(registry.getRegisteredWord("Lorem"),registry.getRegisteredWord("ipsum")));
+                    final Query query = new Query(Arrays.asList(registry.getRegisteredWord("stronę")));
                     Matcher m = new SequenceIdentifyingMatcher();
-                    m.search(img, query);
+                    final SearchResult searchResult = m.search(img, query);
+                    final RankingResult rankingResult = new DefaultRankingStrategy().rank(searchResult, query);
+                    System.out.println(String.format("%s: %d", f.getName(), rankingResult.getValue()));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
