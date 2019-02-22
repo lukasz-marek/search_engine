@@ -39,9 +39,9 @@ public class LongestCommonSubSequenceMatcher implements Matcher {
 
             for (int n = 0; n < fileLine.size(); n++) {
 
-                if (queryWords.get(m-1).equals(fileLine.get(n-1))) {
-                    final int length = cache[m - 1][n - 1] + 1;
-                    cache[m][n] = length;
+                if (queryWords.get(m).equals(fileLine.get(n))) {
+                    final int length = cache[m][n] + 1;
+                    cache[m + 1][n + 1] = length;
 
                     final List<Word> match = new ArrayList<>();
                     for(int k = n; k < n + length; k++){
@@ -54,8 +54,8 @@ public class LongestCommonSubSequenceMatcher implements Matcher {
                     }
                     matches.get(length).add(Collections.unmodifiableList(match));
 
-                } else if (m != 0 && n != 0) {
-                    cache[m][n] = Math.max(cache[m][n - 1], cache[m - 1][n]);
+                } else {
+                    cache[m+1][n+1] = Math.max(cache[m+1][n], cache[m][n+1]);
                 }
 
             }
