@@ -1,4 +1,4 @@
-package com.randomcorp.search.matching;
+package com.randomcorp.search.ranking;
 
 import com.randomcorp.file.image.FileImage;
 import com.randomcorp.file.image.FileImageTest;
@@ -6,22 +6,26 @@ import com.randomcorp.file.normalization.WhitespaceLineSplitter;
 import com.randomcorp.processing.vocabulary.IdentityWordNormalizer;
 import com.randomcorp.processing.vocabulary.VocabularyRegistry;
 import com.randomcorp.processing.vocabulary.VocabularyRegistryImpl;
+import com.randomcorp.search.matching.Query;
+import com.randomcorp.search.matching.SearchResult;
+import com.randomcorp.search.matching.SequenceIdentifyingMatcher;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.stream.Collectors;
 
-public class SequenceIdentifyingMatcherTest {
+public class DefaultRankingStrategyTest {
 
     private SequenceIdentifyingMatcher matcher = new SequenceIdentifyingMatcher();
+
+    private DefaultRankingStrategy rankingStrategy = new DefaultRankingStrategy();
 
     private final static String FILE_NAME = "testfile.txt";
 
     @Test
-    public void shouldFindFullMatch() throws IOException {
+    public void shouldReturn100() throws IOException {
         //given
         final ClassLoader classLoader = FileImageTest.class.getClassLoader();
         final File file = new File(classLoader.getResource(FILE_NAME).getFile());
@@ -33,41 +37,17 @@ public class SequenceIdentifyingMatcherTest {
                 .stream()
                 .map(registry::getRegisteredWord)
                 .collect(Collectors.toList()));
-
-        //when
         final SearchResult result = matcher.search(fileImage, query);
 
+        //when
+        final RankingResult rankingResult = rankingStrategy.rank(result, query);
+
         //then
-        Assert.assertEquals(result.getMatches().size(), 11);
-        Assert.assertEquals(result.getMatches().get(0).getMaxLength(), query.getWords().size());
-        Assert.assertEquals(result.getMatches().get(0).getNumberOfSequences(), 1);
+        Assert.assertEquals(100, rankingResult.getValue());
     }
 
     @Test
-    public void shouldMatchSingleWord() throws IOException {
-        //given
-        final ClassLoader classLoader = FileImageTest.class.getClassLoader();
-        final File file = new File(classLoader.getResource(FILE_NAME).getFile());
-        final VocabularyRegistry registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
-        final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
-
-        final String queryString = "Kenobi.";
-        final Query query = new Query(new WhitespaceLineSplitter().split(queryString)
-                .stream()
-                .map(registry::getRegisteredWord)
-                .collect(Collectors.toList()));
-
-        //when
-        final SearchResult result = matcher.search(fileImage, query);
-
-        //then
-        Assert.assertEquals(1, result.getMatches().size());
-        Assert.assertEquals(query.getWords().size(), result.getMatches().get(0).getMaxLength());
-        Assert.assertEquals(2, result.getMatches().get(0).getNumberOfSequences());
-    }
-
-    @Test
-    public void shouldNotMatchAnyWords() throws IOException {
+    public void shouldReturn0() throws IOException {
         //given
         final ClassLoader classLoader = FileImageTest.class.getClassLoader();
         final File file = new File(classLoader.getResource(FILE_NAME).getFile());
@@ -79,106 +59,113 @@ public class SequenceIdentifyingMatcherTest {
                 .stream()
                 .map(registry::getRegisteredWord)
                 .collect(Collectors.toList()));
-
-        //when
         final SearchResult result = matcher.search(fileImage, query);
 
+        //when
+        final RankingResult rankingResult = rankingStrategy.rank(result, query);
+
         //then
-        Assert.assertEquals(1, result.getMatches().size());
-        Assert.assertEquals(0, result.getMatches().get(0).getMaxLength());
-        Assert.assertEquals(0, result.getMatches().get(0).getNumberOfSequences());
+        Assert.assertEquals(0, rankingResult.getValue());
     }
 
     @Test
-    public void shouldMatchWithGap() throws IOException {
+    public void shouldReturn33() throws IOException {
         //given
         final ClassLoader classLoader = FileImageTest.class.getClassLoader();
         final File file = new File(classLoader.getResource(FILE_NAME).getFile());
         final VocabularyRegistry registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
         final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
 
-        final String queryString = "droid delivered"; // in test file: "droid safely delivered"
+        final String queryString = "General Obi Kenobi.";
         final Query query = new Query(new WhitespaceLineSplitter().split(queryString)
                 .stream()
                 .map(registry::getRegisteredWord)
                 .collect(Collectors.toList()));
-
-        //when
         final SearchResult result = matcher.search(fileImage, query);
 
+        //when
+        final RankingResult rankingResult = rankingStrategy.rank(result, query);
+
         //then
-        Assert.assertEquals(2, result.getMatches().size());
-        Assert.assertEquals(2, result.getMatches().get(0).getMaxLength());
-        Assert.assertEquals(1, result.getMatches().get(1).getMaxLength());
+        /* Internally, there are some roundings, so it's better to check
+        if the value if "close enough"
+        */
+        Assert.assertTrue(rankingResult.getValue() >= 32);
+        Assert.assertTrue(rankingResult.getValue() <= 34);
     }
 
+
     @Test
-    public void shouldMatchWithSuffix() throws IOException {
+    public void shouldReturn100ForTwoWords() throws IOException {
         //given
         final ClassLoader classLoader = FileImageTest.class.getClassLoader();
         final File file = new File(classLoader.getResource(FILE_NAME).getFile());
         final VocabularyRegistry registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
         final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
 
-        final String queryString = "droid delivered message"; // in test file: "droid safely delivered"
+        final String queryString = "droid delivered";
         final Query query = new Query(new WhitespaceLineSplitter().split(queryString)
                 .stream()
                 .map(registry::getRegisteredWord)
                 .collect(Collectors.toList()));
-
-        //when
         final SearchResult result = matcher.search(fileImage, query);
 
+        //when
+        final RankingResult rankingResult = rankingStrategy.rank(result, query);
+
         //then
-        Assert.assertEquals(3, result.getMatches().size());
-        Assert.assertEquals(2, result.getMatches().get(0).getMaxLength());
-        Assert.assertEquals(1, result.getMatches().get(1).getMaxLength());
+        Assert.assertEquals(100, rankingResult.getValue());
     }
 
     @Test
-    public void shouldMatchWithPrefix() throws IOException {
+    public void shouldReturn66WithUnknownPrefix() throws IOException {
         //given
         final ClassLoader classLoader = FileImageTest.class.getClassLoader();
         final File file = new File(classLoader.getResource(FILE_NAME).getFile());
         final VocabularyRegistry registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
         final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
 
-        final String queryString = "wayward droid delivered"; // in test file: "droid safely delivered"
+        final String queryString = "fat droid delivered";
         final Query query = new Query(new WhitespaceLineSplitter().split(queryString)
                 .stream()
                 .map(registry::getRegisteredWord)
                 .collect(Collectors.toList()));
-
-        //when
         final SearchResult result = matcher.search(fileImage, query);
 
+        //when
+        final RankingResult rankingResult = rankingStrategy.rank(result, query);
+
         //then
-        Assert.assertEquals(3, result.getMatches().size());
-        Assert.assertEquals(2, result.getMatches().stream()
-                .map(MatchingReport::getMaxLength)
-                .max(Comparator.naturalOrder())
-                .get().intValue());
+        /* Internally, there are some roundings, so it's better to check
+        if the value if "close enough"
+        */
+        Assert.assertTrue(rankingResult.getValue() >= 65);
+        Assert.assertTrue(rankingResult.getValue() <= 67);
     }
 
     @Test
-    public void shouldIgnoreNewLine() throws IOException {
+    public void shouldReturn66WithUnknownSuffix() throws IOException {
         //given
         final ClassLoader classLoader = FileImageTest.class.getClassLoader();
         final File file = new File(classLoader.getResource(FILE_NAME).getFile());
         final VocabularyRegistry registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
         final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
 
-        final String queryString = "it. You must"; // in testfile: "it.\n You must"
+        final String queryString = "droid delivered message";
         final Query query = new Query(new WhitespaceLineSplitter().split(queryString)
                 .stream()
                 .map(registry::getRegisteredWord)
                 .collect(Collectors.toList()));
-
-        //when
         final SearchResult result = matcher.search(fileImage, query);
 
+        //when
+        final RankingResult rankingResult = rankingStrategy.rank(result, query);
+
         //then
-        Assert.assertEquals(3, result.getMatches().size());
-        Assert.assertEquals(3, result.getMatches().get(0).getMaxLength());
+        /* Internally, there are some roundings, so it's better to check
+        if the value if "close enough"
+        */
+        Assert.assertTrue(rankingResult.getValue() >= 65);
+        Assert.assertTrue(rankingResult.getValue() <= 67);
     }
 }

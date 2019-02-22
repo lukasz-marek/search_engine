@@ -53,11 +53,11 @@ public class SequenceIdentifyingMatcher implements Matcher {
             final Set<Long> next = matchingWords.get(i + 1);
             final Set<Long> successors = getSuccessors(current);
             next.retainAll(successors);
+            matchLength += 1;
 
             if (next.isEmpty()){
                 break;
             }
-            matchLength += 1;
         }
 
         return new MatchingReport(matchLength, matchSize);
