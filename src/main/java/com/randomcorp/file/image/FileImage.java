@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class FileImage {
+public final class FileImage {
 
     private final List<List<Word>> lines;
 

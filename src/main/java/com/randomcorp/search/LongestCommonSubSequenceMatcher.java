@@ -34,12 +34,12 @@ public class LongestCommonSubSequenceMatcher implements Matcher {
 
         final Map<Integer, List<List<Word>>> matches = new HashMap<>();
 
-        final int[][] cache = new int[queryWords.size()][fileLine.size()];
+        final int[][] cache = new int[queryWords.size() + 1][fileLine.size() + 1];
         for (int m = 0; m < queryWords.size(); m++) {
 
             for (int n = 0; n < fileLine.size(); n++) {
 
-                if (queryWords.get(m).equals(fileLine.get(n))) {
+                if (queryWords.get(m-1).equals(fileLine.get(n-1))) {
                     final int length = cache[m - 1][n - 1] + 1;
                     cache[m][n] = length;
 
@@ -48,7 +48,10 @@ public class LongestCommonSubSequenceMatcher implements Matcher {
                         match.add(fileLine.get(k));
                     }
 
-                    matches.putIfAbsent(length, new ArrayList<>());
+                    if(!matches.containsKey(length)){
+                        matches.put(length, new ArrayList<>());
+
+                    }
                     matches.get(length).add(Collections.unmodifiableList(match));
 
                 } else if (m != 0 && n != 0) {
