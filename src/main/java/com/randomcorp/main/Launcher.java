@@ -36,8 +36,11 @@ public class Launcher {
         final File searchDirectory = checkPreconditionsAndGetDirectory(args);
         final File[] contents = searchDirectory.listFiles();
 
+        System.out.println("Loading files, please wait");
+
         final VocabularyRegistry registry = new VocabularyRegistryImpl(String::trim);
         final List<FileImage> fileImages = Arrays.stream(contents)
+                .parallel()
                 .filter(File::isFile)
                 .filter(file -> !file.isHidden())
                 .map(file -> convert(file, registry))
