@@ -11,9 +11,14 @@ import java.util.stream.Collectors;
 
 public final class FileImage {
 
+    private final String name;
+
     private final Map<Word, Set<Long>> wordIndexes;
 
-    private FileImage(List<List<Word>> lines) {
+    private FileImage(List<List<Word>> lines, String name) {
+
+        this.name = name;
+
         final Map<Word, Set<Long>> indexes = new HashMap<>();
         long index = 0;
         for(List<Word> line : lines){
@@ -43,10 +48,14 @@ public final class FileImage {
             lines.add(Collections.unmodifiableList(registeredWords));
         }
 
-        return new FileImage(lines);
+        return new FileImage(lines, textFile.getName());
     }
 
     public Map<Word, Set<Long>> getWordIndexes() {
         return wordIndexes;
+    }
+
+    public String getName() {
+        return name;
     }
 }

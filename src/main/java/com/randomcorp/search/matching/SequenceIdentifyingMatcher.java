@@ -2,7 +2,6 @@ package com.randomcorp.search.matching;
 
 import com.randomcorp.file.image.FileImage;
 import com.randomcorp.processing.vocabulary.Word;
-import com.randomcorp.search.ranking.RankingResult;
 
 import java.util.*;
 
@@ -30,7 +29,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
         return new SearchResult(matchData);
     }
 
-    private MatchingReport match(int startIndex, Map<Word, Set<Long>> queriedIndexes, Query query){
+    protected MatchingReport match(int startIndex, Map<Word, Set<Long>> queriedIndexes, Query query){
         final List<Set<Long>> matchingWords = new ArrayList<>();
         for(Word word : query.getWords().subList(startIndex, query.getWords().size())){
             matchingWords.add(new HashSet<>(queriedIndexes.get(word)));
@@ -64,7 +63,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
         return new MatchingReport(matchLength, matchSize);
     }
 
-    private Set<Long> getSuccessors(Set<Long> currentPositions){
+    protected Set<Long> getSuccessors(Set<Long> currentPositions){
         final Set<Long> successors = new HashSet<>();
         for(long current : currentPositions){
             for(int i = 1; i<= MAX_GAP; i++){
