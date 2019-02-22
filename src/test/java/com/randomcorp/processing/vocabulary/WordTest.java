@@ -6,6 +6,19 @@ import org.junit.Test;
 public class WordTest {
 
     @Test
+    public void shouldReturnPassedValues(){
+        // given
+        final long id1 = 1;
+        final String value1 = "Yoda";
+        // when
+        final Word word1 = new Word(id1, value1);
+        //then
+        Assert.assertEquals(value1, word1.getValue());
+        Assert.assertEquals(id1, word1.getId());
+
+    }
+
+    @Test
     public void shouldHaveEqualHashCodesButNotBeEqual(){
         // given
         final long id1 = 1;
