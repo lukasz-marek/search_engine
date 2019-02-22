@@ -30,11 +30,10 @@ public final class VocabularyRegistryImpl implements VocabularyRegistry {
     }
 
 
-    public Optional<Word> getRegisteredWord(String word){
+    public Word getRegisteredWord(String word){
         word = wordNormalizer.normalize(word);
 
-        final Word maybeWord = idRegistry.getOrDefault(word, null);
-        return Optional.ofNullable(maybeWord);
+        return idRegistry.getOrDefault(word, VocabularyRegistry.UNKNOWN_WORD);
     }
 
 
