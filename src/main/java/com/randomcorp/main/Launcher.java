@@ -18,6 +18,7 @@ import com.randomcorp.search.ranking.RankingStrategy;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class Launcher {
@@ -43,6 +44,7 @@ public class Launcher {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
+        System.gc();
         System.out.format("%d files loaded\n", fileImages.size());
 
         final Matcher searchEngine = new SequenceIdentifyingMatcher();
@@ -64,7 +66,7 @@ public class Launcher {
             }
 
             performSearch(input, registry, searchEngine, rankingStrategy, fileImages);
-
+            System.gc();
         } while (true);
 
         inputSource.close();
@@ -78,8 +80,9 @@ public class Launcher {
                 .collect(Collectors.toList());
 
         final Query query = new Query(queryContents);
-        final Map<String, Integer> rankingResults = new HashMap<>();
-        fileImages.forEach(fileImage -> {
+        final Map<String, Integer> rankingResults = new ConcurrentHashMap<>();
+
+        fileImages.parallelStream().forEach(fileImage -> {
             final SearchResult searchResult = searchEngine.search(fileImage, query);
             final RankingResult rankingResult = rankingStrategy.rank(searchResult, query);
             rankingResults.put(fileImage.getName(), rankingResult.getValue());
