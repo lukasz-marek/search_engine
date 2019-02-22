@@ -8,7 +8,7 @@ import java.util.*;
 
 public class SequenceIdentifyingMatcher implements Matcher {
 
-    public final int MAX_GAP = 3;
+    private final int MAX_GAP = 3;
 
     @Override
     public SearchResult search(FileImage fileImage, Query query) {
@@ -29,7 +29,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
         return new SearchResult(matchData);
     }
 
-    protected MatchingReport match(int startIndex, Map<Word, Set<Long>> queriedIndexes, Query query){
+    private MatchingReport match(int startIndex, Map<Word, Set<Long>> queriedIndexes, Query query){
         final List<Set<Long>> matchingWords = new ArrayList<>();
         for(Word word : query.getWords().subList(startIndex, query.getWords().size())){
             matchingWords.add(new HashSet<>(queriedIndexes.get(word)));
@@ -63,7 +63,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
         return new MatchingReport(matchLength, matchSize);
     }
 
-    protected Set<Long> getSuccessors(Set<Long> currentPositions){
+    private Set<Long> getSuccessors(Set<Long> currentPositions){
         final Set<Long> successors = new HashSet<>();
         for(long current : currentPositions){
             for(int i = 1; i<= MAX_GAP; i++){
