@@ -10,39 +10,38 @@ import java.util.stream.Collectors;
 
 public class FileImage {
 
-    private final Map<Word, Set<Long>> wordIndexes;
+    private final List<List<Word>> lines;
 
-    private FileImage(Map<Word, Set<Long>> wordIndexes){
-        this.wordIndexes = wordIndexes;
+    private final Set<Word> words;
+
+    private FileImage(List<List<Word>> lines) {
+        this.lines = lines;
+        this.words = Collections.unmodifiableSet(lines.stream().flatMap(List::stream).collect(Collectors.toSet()));
     }
 
-    public Set<Long> getIndexesForWord(Word word){
-        return Collections.unmodifiableSet(this.wordIndexes.getOrDefault(word, Collections.emptySet()));
-    }
 
     public static FileImage of(File textFile, VocabularyRegistryImpl registry, LineSplitter lineSplitter) throws IOException {
-        final Map<Word, Set<Long>> wordIndexes = new HashMap<>();
-        long wordIndex = 0;
+        final List<List<Word>> lines = new ArrayList<>();
+
         String line = null;
         final BufferedReader reader = new BufferedReader(new FileReader(textFile));
-        while ((line = reader.readLine()) != null){
+        while ((line = reader.readLine()) != null) {
             final List<String> seperateWords = lineSplitter.split(line);
             final List<Word> registeredWords = seperateWords.stream()
                     .map(registry::registerAsWord).collect(Collectors.toList());
 
-            for(Word word : registeredWords){
-                if(! wordIndexes.containsKey(word)){
-                    wordIndexes.put(word, new HashSet<>());
-                }
-                final Set<Long> indexes = wordIndexes.get(word);
-                indexes.add(wordIndex);
-                wordIndex++;
-            }
-
+            lines.add(Collections.unmodifiableList(registeredWords));
         }
 
-        return new FileImage(wordIndexes);
+        return new FileImage(lines);
     }
 
 
+    public List<List<Word>> getLines() {
+        return lines;
+    }
+
+    public Set<Word> getWords() {
+        return words;
+    }
 }
