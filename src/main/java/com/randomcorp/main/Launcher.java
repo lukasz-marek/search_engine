@@ -1,9 +1,11 @@
 package com.randomcorp.main;
 
 import com.randomcorp.file.image.FileImage;
+import com.randomcorp.file.normalization.LineSplitter;
 import com.randomcorp.file.normalization.WhitespaceLineSplitter;
 import com.randomcorp.processing.vocabulary.VocabularyRegistry;
 import com.randomcorp.processing.vocabulary.VocabularyRegistryImpl;
+import com.randomcorp.processing.vocabulary.Word;
 import com.randomcorp.processing.vocabulary.WordNormalizer;
 import com.randomcorp.search.matching.SearchResult;
 import com.randomcorp.search.matching.SequenceIdentifyingMatcher;
@@ -11,42 +13,101 @@ import com.randomcorp.search.matching.Matcher;
 import com.randomcorp.search.matching.Query;
 import com.randomcorp.search.ranking.DefaultRankingStrategy;
 import com.randomcorp.search.ranking.RankingResult;
+import com.randomcorp.search.ranking.RankingStrategy;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Launcher {
+
+    private final static String EXIT_COMMAND = ":quit";
+
+    private final static String PROMPT = "search> ";
+
+    private final static long RESULT_LIMIT = 10;
+
+
+    private final static LineSplitter LINE_SPLITTER = new WhitespaceLineSplitter();
+
     public static void main(String[] args) {
-        System.out.println(args[0]);
 
-        final File directory = new File(args[0]);
-        final File[] listOfFiles = directory.listFiles();
-        final VocabularyRegistry registry = new VocabularyRegistryImpl(new WordNormalizer() {
-            @Override
-            public String normalize(String word) {
-                return word.trim();
-            }
-        });
-
-        FileImage img = null;
-        for(File f : listOfFiles){
-            if(f.isFile() && !f.isHidden()) {
-                try {
-                    img = FileImage.of(f, registry, new WhitespaceLineSplitter());//.getWordIndexes();
-                    final Query query = new Query(Arrays.asList(registry.getRegisteredWord("Polska")));
-                    Matcher m = new SequenceIdentifyingMatcher();
-                    final SearchResult searchResult = m.search(img, query);
-                    final RankingResult rankingResult = new DefaultRankingStrategy().rank(searchResult, query);
-                    System.out.println(String.format("%s: %d", f.getName(), rankingResult.getValue()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        if(args.length != 1){
+            System.err.println("A single argument (path to search directory) is expected.");
+            System.exit(-1);
         }
 
+        final File searchDirectory = new File(args[0]);
 
+        if(!searchDirectory.exists()){
+            System.err.println(String.format("Path %s does not exist", args[0]));
+            System.exit(-2);
+        }
+
+        if(!searchDirectory.isDirectory()){
+            System.err.println(String.format("%s is not a directory", args[0]));
+            System.exit(-3);
+        }
+
+        final File[] contents = searchDirectory.listFiles();
+        if(contents == null){
+            System.err.println(String.format("%s is empty", args[0]));
+            System.exit(-4);
+        }
+
+        final VocabularyRegistry registry = new VocabularyRegistryImpl(String::trim);
+        final List<FileImage> fileImages = Arrays.stream(contents)
+                .filter(File::isFile)
+                .filter(file -> !file.isHidden())
+                .map(file -> convert(file, registry))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        final Matcher searchEngine = new SequenceIdentifyingMatcher();
+        final RankingStrategy rankingStrategy = new DefaultRankingStrategy();
+
+        final Scanner inputSource = new Scanner(System.in);
+
+        String input = null;
+        do{
+            System.out.print(PROMPT);
+            input = inputSource.nextLine().trim();
+
+            if(input.equals(EXIT_COMMAND)){
+                break;
+            }
+            final List<Word> queryContents = LINE_SPLITTER.split(input).stream()
+                    .map(registry::getRegisteredWord)
+                    .collect(Collectors.toList());
+
+            final Query query = new Query(queryContents);
+            final Map<String, Integer> rankingResults = new HashMap<>();
+            fileImages.forEach(fileImage -> {
+                final SearchResult searchResult = searchEngine.search(fileImage, query);
+                final RankingResult rankingResult = rankingStrategy.rank(searchResult, query);
+                rankingResults.put(fileImage.getName(), rankingResult.getValue());
+            });
+
+            final List<String> bestMatches = rankingResults.keySet()
+                    .stream().sorted((str1, str2) -> Integer.compare(rankingResults.get(str2), rankingResults.get(str1)))
+                    .limit(10L).collect(Collectors.toList());
+            for(String filename:bestMatches){
+                final String row = String.format("%s: %d%%", filename, rankingResults.get(filename));
+                System.out.println(row);
+            }
+
+        }while (true);
+
+        inputSource.close();
+    }
+
+    private static FileImage convert(File file, VocabularyRegistry vocabularyRegistry){
+        try {
+            return FileImage.of(file, vocabularyRegistry, LINE_SPLITTER);
+        } catch (IOException e) {
+            System.err.println(String.format("Could not read file %s, ignoring.", file.getName()));
+            return null;
+        }
     }
 }

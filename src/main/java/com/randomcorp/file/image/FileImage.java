@@ -48,6 +48,7 @@ public final class FileImage {
             lines.add(Collections.unmodifiableList(registeredWords));
         }
 
+        reader.close();
         return new FileImage(lines, textFile.getName());
     }
 
