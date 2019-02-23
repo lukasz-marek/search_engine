@@ -26,12 +26,12 @@ To run tests, please execute `mvn test` in the root directory.
 ### Final comments:
 - Due to ambiguity in task description, I wasn't entirely sure whether the file marked as 100% match should contain a phrase ("to be or not to be")
 or just all the words in any order and with gaps ("not", "be", "to", "or"). Therefore, a "hybrid" approach was taken: 
-the file will me marked as 100% match if it contains all the words in the given order, but up to 2 words (this can easily be adjusted) will be allowed in between,
+the file will be marked as 100% match if it contains all the words in the given order, but up to 2 words (this can easily be adjusted) will be allowed in between,
 for example the query "to be or not to be" will be 100% matched with "to be or maybe not to be". On the other hand, query "to be or not to be"
 will only have some partial matches with "to be not to be": "to be" and "not to be".
 - Search mechanism ignores newlines. Words are treated as if they were all present in a single line.
-- What constitutes a word: current implementation, it is assumed that each line of the file contains words separated by whitespace characters.
-For example, the sentence "I would like to eat." will be split into "I", "would", "like", "to", "eat.". Search is case sensitive.
+- What constitutes a word: in current implementation, it is assumed that each line of the file contains words separated by whitespace characters.
+For example, the sentence "I would like to eat." will be split into "I", "would", "like", "to", "eat." (**please notice the dot at the end of "eat."**). Search is case sensitive.
 - Search is parallel (each file is processed by a single thread, but the number of used threads is limited).
 - Worst and best case scenario: best case scenario is when none of the queried words are present in a file. In this case,
 the search is completed almost immediately. For the worst case scenario, one would have to prepare a special file. For example,
