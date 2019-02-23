@@ -1,4 +1,4 @@
-# Simple search engine for files
+# Simple search engine for text files
 
 ### Prerequisites:
 - **openjdk** version "1.8.0_201" or compatible
