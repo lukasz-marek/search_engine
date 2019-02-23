@@ -6,7 +6,6 @@ import com.randomcorp.file.normalization.WhitespaceLineSplitter;
 import com.randomcorp.processing.vocabulary.VocabularyRegistry;
 import com.randomcorp.processing.vocabulary.VocabularyRegistryImpl;
 import com.randomcorp.processing.vocabulary.Word;
-import com.randomcorp.processing.vocabulary.WordNormalizer;
 import com.randomcorp.search.matching.SearchResult;
 import com.randomcorp.search.matching.SequenceIdentifyingMatcher;
 import com.randomcorp.search.matching.Matcher;
@@ -27,6 +26,8 @@ public class Launcher {
 
     private final static String PROMPT = "search> ";
 
+    private final static String TEXT_FILE_SUFFIX = ".txt";
+
     private final static long RESULT_LIMIT = 10;
 
     private final static LineSplitter LINE_SPLITTER = new WhitespaceLineSplitter();
@@ -42,6 +43,7 @@ public class Launcher {
         final List<FileImage> fileImages = Arrays.stream(contents)
                 .parallel()
                 .filter(File::isFile)
+                .filter(file -> file.getName().endsWith(TEXT_FILE_SUFFIX))
                 .filter(file -> !file.isHidden())
                 .map(file -> convert(file, registry))
                 .filter(Objects::nonNull)
