@@ -1,10 +1,10 @@
-#Simple search engine for files
+# Simple search engine for files
 
-###Prerequisites:
+### Prerequisites:
 - **openjdk** version "1.8.0_201" or compatible
 - **Apache Maven** 3.5.4 (Red Hat 3.5.4-4) or compatible
 
-###Building, testing and running
+### Building, testing and running
 To build the project, please clone it, then `cd `to the root (*search_engine* directory) and execute:
 `mvn clean package`
 
@@ -18,12 +18,12 @@ its functionality.
 
 To run tests, please execute `mvn test` in the root directory.
 
-###Usage notes:
+### Usage notes:
 - At launch, the program will read all the files in the provided directory **(non-recursively)**. It may take some time.
 - When prompt `search> ` appears, you can type the sequence of words to be found, for example: `search> to be or not to be`
 - To exit, type `:quit`
 
-###Final comments:
+### Final comments:
 - Due to ambiguity in task description, I wasn't entirely sure whether the file marked as 100% match should contain a phrase ("to be or not to be")
 or just all the words in any order and with gaps ("not", "be", "to", "or"). Therefore, a "hybrid" approach was taken:
 the file will me marked as 100% match if it contains all the words in the given order, but up to 2 words (this can easily be adjusted) will be allowed in between,
