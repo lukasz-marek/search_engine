@@ -5,12 +5,12 @@
 - **Apache Maven** 3.5.4 (Red Hat 3.5.4-4) or compatible
 
 ### Building, testing and running
-To build the project, please clone it, then `cd `to the root (*search_engine* directory) and execute:
+To build the project, please clone it, then `cd `to the root (*search_engine* directory) and execute: 
 `mvn clean package`
 
 The command above creates many *.class* files and two *.jar* files in the *search_engine/target* directory.
 
-To run, please `cd` into `search_engine/target` and execute:
+To run, please `cd` into `search_engine/target` and execute: 
 `java -jar SearchEngine-1.0-SNAPSHOT-jar-with-dependencies.jar /path/to/directory`
 
 **Note**: this *.jar* file contains all the dependencies inside and it can be freely moved between directories without losing
@@ -25,7 +25,7 @@ To run tests, please execute `mvn test` in the root directory.
 
 ### Final comments:
 - Due to ambiguity in task description, I wasn't entirely sure whether the file marked as 100% match should contain a phrase ("to be or not to be")
-or just all the words in any order and with gaps ("not", "be", "to", "or"). Therefore, a "hybrid" approach was taken:
+or just all the words in any order and with gaps ("not", "be", "to", "or"). Therefore, a "hybrid" approach was taken: 
 the file will me marked as 100% match if it contains all the words in the given order, but up to 2 words (this can easily be adjusted) will be allowed in between,
 for example the query "to be or not to be" will be 100% matched with "to be or maybe not to be". On the other hand, query "to be or not to be"
 will only have some partial matches with "to be not to be": "to be" and "not to be".
