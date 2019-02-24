@@ -35,7 +35,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
                 }
 
                 matchData.addAll(matches);
-                if (maxMatchLength == query.getWords().size()){
+                if (maxMatchLength >= query.getWords().size() - i){
                     // there's no way to obtain a better result, so the search may now terminate
                     break;
                 }
