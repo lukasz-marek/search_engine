@@ -14,67 +14,69 @@ public class SequenceIdentifyingMatcher implements Matcher {
     @Override
     public List<Match> search(FileImage fileImage, Query query) {
 
-        final Map<Word, Set<Long>> queriedIndexes = new HashMap<>();
-        final Map<Word, Set<Long>> indexedWords = fileImage.getWordOccurrences();
+        final Map<Word, Set<Long>> queriedWordsOccurrences = getQueriedWordsOccurrences(fileImage, query);
 
-        for (Word word : query.getWords()) {
-            queriedIndexes.put(word, indexedWords.getOrDefault(word, Collections.emptySet()));
-        }
-
-        final List<Match> matchData = new ArrayList<>();
+        final List<Match> bestMatchesSoFar = new ArrayList<>();
         int maxMatchLength = 0;
-        for (int i = 0; i < query.getWords().size(); i++) {
-            final List<Match> matches = match(i, maxMatchLength, queriedIndexes, query);
+        for (int startIndex = 0; startIndex < query.getWords().size(); startIndex++) {
+            final List<Match> matches = match(startIndex, maxMatchLength, queriedWordsOccurrences, query);
 
-            if (!matches.isEmpty()) {
-                final int bestMatchLength = matches.stream()
-                        .map(match -> match.getOccurrences().size())
-                        .max(Comparator.naturalOrder())
-                        .get();
-                maxMatchLength = Math.max(bestMatchLength, maxMatchLength);
-            }
-
+            maxMatchLength = Math.max(getBestMatchLength(matches), maxMatchLength);
             final int bestMatchLength = maxMatchLength;
-            matchData.addAll(matches.stream().filter(match -> match.getOccurrences().size() == bestMatchLength).collect(Collectors.toList()));
-            if (maxMatchLength >= query.getWords().size() - i) {
+            final List<Match> goodMatches = matches.stream()
+                    .filter(match -> match.getOccurrences().size() == bestMatchLength)
+                    .collect(Collectors.toList());
+
+            bestMatchesSoFar.addAll(goodMatches);
+            if (maxMatchLength >= query.getWords().size() - startIndex) {
                 // there's no way to obtain a better result, so the search may now terminate
                 break;
             }
         }
 
         final int bestMatchLength = maxMatchLength;
-        final List<Match> bestMatches = matchData.stream()
+        final List<Match> bestMatches = bestMatchesSoFar.stream()
                 .filter(match -> match.getOccurrences().size() == bestMatchLength)
                 .collect(Collectors.toList());
 
         return Collections.unmodifiableList(bestMatches);
     }
 
-    private List<Match> match(int startIndex, int currentBestMatchLength, Map<Word, Set<Long>> queriedIndexes, Query query) {
-        final List<Set<Long>> matchingWords = new ArrayList<>();
-        for (Word word : query.getWords().subList(startIndex, query.getWords().size())) {
-            matchingWords.add(queriedIndexes.get(word));
+    private Map<Word, Set<Long>> getQueriedWordsOccurrences(FileImage fileImage, Query query) {
+        final Map<Word, Set<Long>> allWordsOccurrences = fileImage.getWordOccurrences();
+        final Map<Word, Set<Long>> queriedWordsOccurrences = new HashMap<>();
+
+        for (Word word : query.getWords()) {
+            queriedWordsOccurrences.put(word, allWordsOccurrences.getOrDefault(word, Collections.emptySet()));
         }
 
-        return identifySequences(matchingWords, currentBestMatchLength);
+        return Collections.unmodifiableMap(queriedWordsOccurrences);
+    }
+
+    private int getBestMatchLength(List<Match> matches) {
+        return matches.isEmpty() ? 0 : matches.stream()
+                .map(match -> match.getOccurrences().size())
+                .max(Comparator.naturalOrder())
+                .get();
+    }
+
+    private List<Match> match(int startIndex, int currentBestMatchLength, Map<Word, Set<Long>> wordOccurrences, Query query) {
+        final List<Set<Long>> orderedOccurrences = new ArrayList<>();
+        for (Word word : query.getWords().subList(startIndex, query.getWords().size())) {
+            final Set<Long> occurrences = wordOccurrences.get(word);
+            if (occurrences.isEmpty()) {
+                break;
+            }
+            orderedOccurrences.add(occurrences);
+        }
+
+        return orderedOccurrences.isEmpty() ? Collections.emptyList() : identifySequences(orderedOccurrences, currentBestMatchLength);
     }
 
     private List<Match> identifySequences(List<Set<Long>> matchingWords, int currentBestMatchLength) {
-        final List<Set<Long>> matchPrefixes = new ArrayList<>();
-        for (Set<Long> indexes : matchingWords) {
-            if (indexes.isEmpty()) {
-                break;
-            }
-
-            matchPrefixes.add(indexes);
-        }
-
-        if (matchPrefixes.isEmpty() || matchPrefixes.size() < currentBestMatchLength) {
-            return Collections.emptyList();
-        }
 
         final Stack<List<Long>> possibleMatches = new Stack<>();
-        for (long index : matchPrefixes.get(0)) {
+        for (long index : matchingWords.get(0)) {
             possibleMatches.add(Collections.singletonList(index));
         }
 
@@ -82,7 +84,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
         while (!possibleMatches.isEmpty()) {
             final List<Long> currentMatch = possibleMatches.pop();
 
-            if (currentMatch.size() == matchPrefixes.size()) {
+            if (currentMatch.size() == matchingWords.size()) {
                 currentBestMatchLength = Math.max(currentBestMatchLength, currentMatch.size());
                 if (currentMatch.size() >= currentBestMatchLength) {
                     matches.add(new Match(Collections.unmodifiableList(currentMatch)));
@@ -90,10 +92,10 @@ public class SequenceIdentifyingMatcher implements Matcher {
                 continue;
             }
 
-            final Set<Long> possibleNextPositions = matchPrefixes.get(currentMatch.size());
+            final Set<Long> possibleNextPositions = matchingWords.get(currentMatch.size());
             final long lastPosition = currentMatch.get(currentMatch.size() - 1);
 
-            long successor = getSuccessor(lastPosition, possibleNextPositions);
+            final long successor = getSuccessor(lastPosition, possibleNextPositions);
             if (successor < 0) {
                 currentBestMatchLength = Math.max(currentBestMatchLength, currentMatch.size());
                 if (currentMatch.size() >= currentBestMatchLength) {
