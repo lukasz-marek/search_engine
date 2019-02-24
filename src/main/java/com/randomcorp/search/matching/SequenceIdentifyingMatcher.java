@@ -93,7 +93,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
             final Set<Long> possibleNextPositions = matchingWords.get(currentMatch.size());
             final long lastPosition = currentMatch.get(currentMatch.size() - 1);
 
-            final Set<Long> successors= getSuccessors(lastPosition, possibleNextPositions);
+            final Set<Long> successors = getSuccessors(lastPosition, possibleNextPositions);
 
             if (successors.isEmpty()) {
                 currentBestMatchLength = Math.max(currentBestMatchLength, currentMatch.size());
@@ -103,7 +103,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
                 continue;
             }
 
-            for(long successor : successors) {
+            for (long successor : successors) {
                 final List<Long> newMatch = new ArrayList<>(currentMatch);
                 newMatch.add(successor);
                 possibleMatches.push(newMatch);
