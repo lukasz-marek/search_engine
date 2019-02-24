@@ -86,17 +86,16 @@ public class SequenceIdentifyingMatcher implements Matcher {
 
             if (currentMatch.size() == matchingWords.size()) {
                 currentBestMatchLength = Math.max(currentBestMatchLength, currentMatch.size());
-                if (currentMatch.size() >= currentBestMatchLength) {
-                    matches.add(new Match(currentMatch));
-                }
+                matches.add(new Match(currentMatch));
                 continue;
             }
 
             final Set<Long> possibleNextPositions = matchingWords.get(currentMatch.size());
             final long lastPosition = currentMatch.get(currentMatch.size() - 1);
 
-            final long successor = getSuccessor(lastPosition, possibleNextPositions);
-            if (successor < 0) {
+            final Set<Long> successors= getSuccessors(lastPosition, possibleNextPositions);
+
+            if (successors.isEmpty()) {
                 currentBestMatchLength = Math.max(currentBestMatchLength, currentMatch.size());
                 if (currentMatch.size() >= currentBestMatchLength) {
                     matches.add(new Match(currentMatch));
@@ -104,23 +103,28 @@ public class SequenceIdentifyingMatcher implements Matcher {
                 continue;
             }
 
-            final List<Long> newMatch = new ArrayList<>(currentMatch);
-            newMatch.add(successor);
-            possibleMatches.push(newMatch);
+            for(long successor : successors) {
+                final List<Long> newMatch = new ArrayList<>(currentMatch);
+                newMatch.add(successor);
+                possibleMatches.push(newMatch);
+            }
         }
 
         return matches;
     }
 
-    private long getSuccessor(long lastPosition, Set<Long> possibleNextPositions) {
+    private Set<Long> getSuccessors(long lastPosition, Set<Long> possibleNextPositions) {
+
+        final Set<Long> successors = new HashSet<>();
+
         for (int i = 1; i <= MAX_GAP; i++) {
 
             final long successor = lastPosition + i;
             if (possibleNextPositions.contains(successor)) {
-                return successor;
+                successors.add(successor);
             }
         }
-        return -1;
+        return successors;
     }
 
 }
