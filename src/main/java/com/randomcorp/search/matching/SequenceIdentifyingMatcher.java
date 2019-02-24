@@ -111,16 +111,14 @@ public class SequenceIdentifyingMatcher implements Matcher {
     }
 
     private long getSuccessor(long lastPosition, Set<Long> possibleNextPositions) {
-        long successor = -1;
         for (int i = 1; i <= MAX_GAP; i++) {
-            successor = lastPosition + i;
+
+            final long successor = lastPosition + i;
             if (possibleNextPositions.contains(successor)) {
-                break;
-            } else {
-                successor = -1;
+                return successor;
             }
         }
-        return successor;
+        return -1;
     }
 
 }
