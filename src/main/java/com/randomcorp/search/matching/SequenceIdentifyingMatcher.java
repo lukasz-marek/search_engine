@@ -15,7 +15,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
     public List<Match> search(FileImage fileImage, Query query) {
 
         final Map<Word, Set<Long>> queriedIndexes = new HashMap<>();
-        final Map<Word, Set<Long>> indexedWords = fileImage.getWordIndexes();
+        final Map<Word, Set<Long>> indexedWords = fileImage.getWordOccurrences();
 
         for (Word word : query.getWords()) {
             queriedIndexes.put(word, indexedWords.getOrDefault(word, Collections.emptySet()));

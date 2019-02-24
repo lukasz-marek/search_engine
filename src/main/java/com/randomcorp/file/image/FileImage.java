@@ -15,7 +15,7 @@ public final class FileImage {
 
     private final String name;
 
-    private final Map<Word, Set<Long>> wordIndexes;
+    private final Map<Word, Set<Long>> wordOccurrences;
 
     private FileImage(List<List<Word>> lines, String name) {
 
@@ -33,7 +33,7 @@ public final class FileImage {
             }
         }
         indexes.replaceAll((k, v) -> Collections.unmodifiableSet(v));
-        this.wordIndexes = Collections.unmodifiableMap(indexes);
+        this.wordOccurrences = Collections.unmodifiableMap(indexes);
     }
 
 
@@ -54,8 +54,8 @@ public final class FileImage {
         return new FileImage(lines, textFile.getName());
     }
 
-    public Map<Word, Set<Long>> getWordIndexes() {
-        return wordIndexes;
+    public Map<Word, Set<Long>> getWordOccurrences() {
+        return wordOccurrences;
     }
 
     public String getName() {

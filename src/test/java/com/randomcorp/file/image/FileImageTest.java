@@ -25,8 +25,8 @@ public class FileImageTest {
         final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
 
         // then
-        Assert.assertTrue(fileImage.getWordIndexes().get(registry.getRegisteredWord("General")).contains(0l));
-        Assert.assertTrue(fileImage.getWordIndexes().get(registry.getRegisteredWord("Kenobi.")).contains(1l));
+        Assert.assertTrue(fileImage.getWordOccurrences().get(registry.getRegisteredWord("General")).contains(0l));
+        Assert.assertTrue(fileImage.getWordOccurrences().get(registry.getRegisteredWord("Kenobi.")).contains(1l));
     }
 
     @Test
@@ -40,8 +40,8 @@ public class FileImageTest {
         final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
 
         // then
-        Assert.assertFalse(fileImage.getWordIndexes().containsKey(registry.getRegisteredWord("general")));
-        Assert.assertFalse(fileImage.getWordIndexes().containsKey(registry.getRegisteredWord("kenobi.")));
+        Assert.assertFalse(fileImage.getWordOccurrences().containsKey(registry.getRegisteredWord("general")));
+        Assert.assertFalse(fileImage.getWordOccurrences().containsKey(registry.getRegisteredWord("kenobi.")));
     }
 
     @Test
@@ -55,6 +55,6 @@ public class FileImageTest {
         final FileImage fileImage = FileImage.of(file, registry, new WhitespaceLineSplitter());
 
         // then
-        Assert.assertEquals(fileImage.getWordIndexes().get(registry.getRegisteredWord("Kenobi.")).size(), 2);
+        Assert.assertEquals(fileImage.getWordOccurrences().get(registry.getRegisteredWord("Kenobi.")).size(), 2);
     }
 }
