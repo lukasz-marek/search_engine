@@ -12,6 +12,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class SequenceIdentifyingMatcherTest {
@@ -35,12 +36,13 @@ public class SequenceIdentifyingMatcherTest {
                 .collect(Collectors.toList()));
 
         //when
-        final SearchResult result = matcher.search(fileImage, query);
+        final List<List<Long>> result = matcher.search(fileImage, query);
 
         //then
-        Assert.assertEquals(result.getMatches().size(), 11);
-        Assert.assertEquals(result.getMatches().get(0).getMaxLength(), query.getWords().size());
-        Assert.assertEquals(result.getMatches().get(0).getNumberOfSequences(), 1);
+        Assert.assertEquals(11, result.size());
+        Assert.assertEquals(query.getWords().size(),
+                result.stream().map(List::size).max(Comparator.naturalOrder()).get().longValue());
+
     }
 
     @Test
@@ -58,12 +60,12 @@ public class SequenceIdentifyingMatcherTest {
                 .collect(Collectors.toList()));
 
         //when
-        final SearchResult result = matcher.search(fileImage, query);
+        final List<List<Long>> result = matcher.search(fileImage, query);
 
         //then
-        Assert.assertEquals(1, result.getMatches().size());
-        Assert.assertEquals(query.getWords().size(), result.getMatches().get(0).getMaxLength());
-        Assert.assertEquals(2, result.getMatches().get(0).getNumberOfSequences());
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals(query.getWords().size(),
+                result.stream().map(List::size).max(Comparator.naturalOrder()).get().longValue());
     }
 
     @Test
@@ -81,12 +83,10 @@ public class SequenceIdentifyingMatcherTest {
                 .collect(Collectors.toList()));
 
         //when
-        final SearchResult result = matcher.search(fileImage, query);
+        final List<List<Long>> result = matcher.search(fileImage, query);
 
         //then
-        Assert.assertEquals(1, result.getMatches().size());
-        Assert.assertEquals(0, result.getMatches().get(0).getMaxLength());
-        Assert.assertEquals(0, result.getMatches().get(0).getNumberOfSequences());
+        Assert.assertEquals(0, result.size());
     }
 
     @Test
@@ -104,12 +104,12 @@ public class SequenceIdentifyingMatcherTest {
                 .collect(Collectors.toList()));
 
         //when
-        final SearchResult result = matcher.search(fileImage, query);
+        final List<List<Long>> result = matcher.search(fileImage, query);
 
         //then
-        Assert.assertEquals(2, result.getMatches().size());
-        Assert.assertEquals(2, result.getMatches().get(0).getMaxLength());
-        Assert.assertEquals(1, result.getMatches().get(1).getMaxLength());
+        Assert.assertEquals(2, result.size());
+        Assert.assertEquals(query.getWords().size(),
+                result.stream().map(List::size).max(Comparator.naturalOrder()).get().longValue());
     }
 
     @Test
@@ -127,12 +127,12 @@ public class SequenceIdentifyingMatcherTest {
                 .collect(Collectors.toList()));
 
         //when
-        final SearchResult result = matcher.search(fileImage, query);
+        final List<List<Long>> result = matcher.search(fileImage, query);
 
         //then
-        Assert.assertEquals(3, result.getMatches().size());
-        Assert.assertEquals(2, result.getMatches().get(0).getMaxLength());
-        Assert.assertEquals(1, result.getMatches().get(1).getMaxLength());
+        Assert.assertEquals(2, result.size());
+        Assert.assertEquals(2,
+                result.stream().map(List::size).max(Comparator.naturalOrder()).get().longValue());
     }
 
     @Test
@@ -150,14 +150,12 @@ public class SequenceIdentifyingMatcherTest {
                 .collect(Collectors.toList()));
 
         //when
-        final SearchResult result = matcher.search(fileImage, query);
+        final List<List<Long>> result = matcher.search(fileImage, query);
 
         //then
-        Assert.assertEquals(3, result.getMatches().size());
-        Assert.assertEquals(2, result.getMatches().stream()
-                .map(MatchingReport::getMaxLength)
-                .max(Comparator.naturalOrder())
-                .get().intValue());
+        Assert.assertEquals(2, result.size());
+        Assert.assertEquals(2,
+                result.stream().map(List::size).max(Comparator.naturalOrder()).get().longValue());
     }
 
     @Test
@@ -175,10 +173,11 @@ public class SequenceIdentifyingMatcherTest {
                 .collect(Collectors.toList()));
 
         //when
-        final SearchResult result = matcher.search(fileImage, query);
+        final List<List<Long>> result = matcher.search(fileImage, query);
 
         //then
-        Assert.assertEquals(3, result.getMatches().size());
-        Assert.assertEquals(3, result.getMatches().get(0).getMaxLength());
+        Assert.assertEquals(3, result.size());
+        Assert.assertEquals(3,
+                result.stream().map(List::size).max(Comparator.naturalOrder()).get().longValue());
     }
 }

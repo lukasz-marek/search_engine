@@ -1,20 +1,16 @@
 package com.randomcorp.search.ranking;
 
-import com.randomcorp.search.matching.MatchingReport;
 import com.randomcorp.search.matching.Query;
-import com.randomcorp.search.matching.SearchResult;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 public class DefaultRankingStrategy implements RankingStrategy{
 
     @Override
-    public RankingResult rank(SearchResult searchResult, Query query) {
-        final Optional<Integer> longestMatch = searchResult.getMatches()
-                .stream()
-                .map(MatchingReport::getMaxLength)
-                .max(Comparator.naturalOrder());
+    public RankingResult rank(List<List<Long>> matches, Query query) {
+        final Optional<Integer> longestMatch = matches.stream().map(List::size).max(Comparator.naturalOrder());
 
         if(!longestMatch.isPresent()){
             return new RankingResult(0);
@@ -22,15 +18,12 @@ public class DefaultRankingStrategy implements RankingStrategy{
             return new RankingResult(100);
         }
 
-        return compute(searchResult, query);
+        return compute(matches, query);
 
     }
 
-    protected RankingResult compute(SearchResult searchResult, Query query){
-        final int longestMatch = searchResult.getMatches()
-                .stream()
-                .map(MatchingReport::getMaxLength)
-                .max(Comparator.naturalOrder()).get();
+    protected RankingResult compute(List<List<Long>> matches, Query query){
+        final int longestMatch = matches.stream().map(List::size).max(Comparator.naturalOrder()).get();
 
         final double coverage = ((double) longestMatch) / ((double) query.getWords().size());
         final int rank = (int)(coverage * 100.0);
