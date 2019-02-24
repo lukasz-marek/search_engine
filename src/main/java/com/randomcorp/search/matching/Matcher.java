@@ -8,5 +8,5 @@ import java.util.List;
  * Interface describing Matcher classes.
  */
 public interface Matcher {
-    List<List<Long>>  search(FileImage fileImage, Query query);
+    List<Match> search(FileImage fileImage, Query query);
 }

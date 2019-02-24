@@ -11,58 +11,58 @@ public class SequenceIdentifyingMatcher implements Matcher {
     private final int MAX_GAP = 3;
 
     @Override
-    public List<List<Long>> search(FileImage fileImage, Query query) {
+    public List<Match> search(FileImage fileImage, Query query) {
 
         final Map<Word, Set<Long>> queriedIndexes = new HashMap<>();
         final Map<Word, Set<Long>> indexedWords = fileImage.getWordIndexes();
 
-        for(Word word : query.getWords()){
+        for (Word word : query.getWords()) {
             queriedIndexes.put(word, indexedWords.getOrDefault(word, Collections.emptySet()));
         }
 
-        final List<List<Long>> matchData = new ArrayList<>();
-        for(int i = 0; i < query.getWords().size(); i++){
-            final List<List<Long>> match = match(i, queriedIndexes, query);
+        final List<Match> matchData = new ArrayList<>();
+        for (int i = 0; i < query.getWords().size(); i++) {
+            final List<Match> match = match(i, queriedIndexes, query);
             matchData.addAll(match);
         }
 
         return matchData;
     }
 
-    private List<List<Long>>  match(int startIndex, Map<Word, Set<Long>> queriedIndexes, Query query){
+    private List<Match> match(int startIndex, Map<Word, Set<Long>> queriedIndexes, Query query) {
         final List<Set<Long>> matchingWords = new ArrayList<>();
-        for(Word word : query.getWords().subList(startIndex, query.getWords().size())){
+        for (Word word : query.getWords().subList(startIndex, query.getWords().size())) {
             matchingWords.add(new HashSet<>(queriedIndexes.get(word)));
         }
 
         return identifySequences(matchingWords);
     }
 
-    private List<List<Long>> identifySequences(List<Set<Long>> matchingWords){
-       final List<Set<Long>> matchPrefixes = new ArrayList<>();
-       for(Set<Long> indexes : matchingWords){
-           if(indexes.isEmpty()){
-               break;
-           }
+    private List<Match> identifySequences(List<Set<Long>> matchingWords) {
+        final List<Set<Long>> matchPrefixes = new ArrayList<>();
+        for (Set<Long> indexes : matchingWords) {
+            if (indexes.isEmpty()) {
+                break;
+            }
 
-           matchPrefixes.add(indexes);
-       }
+            matchPrefixes.add(indexes);
+        }
 
-       if (matchPrefixes.isEmpty()){
-           return Collections.emptyList();
-       }
+        if (matchPrefixes.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-       final Stack<List<Long>> possibleMatches = new Stack<>();
-       for(long index : matchPrefixes.get(0)){
-           possibleMatches.add(Collections.singletonList(index));
-       }
+        final Stack<List<Long>> possibleMatches = new Stack<>();
+        for (long index : matchPrefixes.get(0)) {
+            possibleMatches.add(Collections.singletonList(index));
+        }
 
-       final List<List<Long>> matches = new ArrayList<>();
-       while(!possibleMatches.isEmpty()){
+        final List<Match> matches = new ArrayList<>();
+        while (!possibleMatches.isEmpty()) {
             final List<Long> currentMatch = possibleMatches.pop();
 
-            if(currentMatch.size() == matchPrefixes.size()){
-                matches.add(currentMatch);
+            if (currentMatch.size() == matchPrefixes.size()) {
+                matches.add(new Match(currentMatch));
                 break;
             }
 
@@ -70,20 +70,20 @@ public class SequenceIdentifyingMatcher implements Matcher {
             final Set<Long> allNextPositions = getSuccessors(Collections.singleton(currentMatch.get(currentMatch.size() - 1)));
             possibleNextPositions.retainAll(allNextPositions);
 
-            for(long nextPosition: possibleNextPositions){
+            for (long nextPosition : possibleNextPositions) {
                 final List<Long> newMatch = new ArrayList<>(currentMatch);
                 newMatch.add(nextPosition);
                 possibleMatches.add(newMatch);
             }
-       }
+        }
 
-       return matches;
+        return matches;
     }
 
-    private Set<Long> getSuccessors(Set<Long> currentPositions){
+    private Set<Long> getSuccessors(Set<Long> currentPositions) {
         final Set<Long> successors = new HashSet<>();
-        for(long current : currentPositions){
-            for(int i = 1; i<= MAX_GAP; i++){
+        for (long current : currentPositions) {
+            for (int i = 1; i <= MAX_GAP; i++) {
                 successors.add(current + i);
             }
         }

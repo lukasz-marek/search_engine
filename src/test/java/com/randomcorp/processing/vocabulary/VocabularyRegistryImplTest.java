@@ -7,7 +7,7 @@ public class VocabularyRegistryImplTest {
 
 
     @Test
-    public void shouldReturnUnknownWord(){
+    public void shouldReturnUnknownWord() {
         // given
         final VocabularyRegistryImpl registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
 
@@ -19,7 +19,7 @@ public class VocabularyRegistryImplTest {
     }
 
     @Test
-    public void shouldReturnTheSameWordTwice(){
+    public void shouldReturnTheSameWordTwice() {
         // given
         final VocabularyRegistryImpl registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
 
@@ -32,7 +32,7 @@ public class VocabularyRegistryImplTest {
     }
 
     @Test
-    public void shouldReturnDistinctWords(){
+    public void shouldReturnDistinctWords() {
         // given
         final VocabularyRegistryImpl registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
 
@@ -47,7 +47,7 @@ public class VocabularyRegistryImplTest {
     }
 
     @Test
-    public void shouldReturnStoredWord(){
+    public void shouldReturnStoredWord() {
         // given
         final VocabularyRegistryImpl registry = new VocabularyRegistryImpl(new IdentityWordNormalizer());
 

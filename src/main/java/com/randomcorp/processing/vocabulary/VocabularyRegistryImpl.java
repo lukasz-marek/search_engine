@@ -1,6 +1,5 @@
 package com.randomcorp.processing.vocabulary;
 
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -15,14 +14,14 @@ public final class VocabularyRegistryImpl implements VocabularyRegistry {
 
     private final WordNormalizer wordNormalizer;
 
-    public VocabularyRegistryImpl(WordNormalizer wordNormalizer){
+    public VocabularyRegistryImpl(WordNormalizer wordNormalizer) {
         this.wordNormalizer = wordNormalizer;
     }
 
-    public Word registerAsWord(String word){
+    public Word registerAsWord(String word) {
         word = wordNormalizer.normalize(word);
 
-        if (idRegistry.containsKey(word)){
+        if (idRegistry.containsKey(word)) {
             return idRegistry.get(word);
         }
 
@@ -30,14 +29,14 @@ public final class VocabularyRegistryImpl implements VocabularyRegistry {
     }
 
 
-    public Word getRegisteredWord(String word){
+    public Word getRegisteredWord(String word) {
         word = wordNormalizer.normalize(word);
 
         return idRegistry.getOrDefault(word, VocabularyRegistry.UNKNOWN_WORD);
     }
 
 
-    private Word registerIfAbsent(String word){
+    private Word registerIfAbsent(String word) {
         /*
          * This method could be replaced by a simple idRegistry.putIfAbsent,
          * but this would mean that some values of idGenerator would be unused.

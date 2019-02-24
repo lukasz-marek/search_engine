@@ -6,7 +6,7 @@ public class MatchingReport {
 
     private final int numberOfSequences;
 
-    public MatchingReport(int maxLength, int numberOfSequences){
+    public MatchingReport(int maxLength, int numberOfSequences) {
         this.maxLength = maxLength;
         this.numberOfSequences = numberOfSequences;
     }

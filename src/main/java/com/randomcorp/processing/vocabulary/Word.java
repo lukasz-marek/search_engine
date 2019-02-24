@@ -16,20 +16,20 @@ public final class Word {
 
     private final long id;
 
-    public Word(long id, String value){
+    public Word(long id, String value) {
         this.id = id;
         this.value = value;
     }
 
     @Override
-    public int hashCode(){
+    public int hashCode() {
         return Long.valueOf(this.id).hashCode();
     }
 
     @Override
-    public boolean equals(Object o){
+    public boolean equals(Object o) {
 
-        if(!(o instanceof Word)){
+        if (!(o instanceof Word)) {
             return false;
         }
 

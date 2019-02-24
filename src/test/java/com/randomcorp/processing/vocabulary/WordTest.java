@@ -6,7 +6,7 @@ import org.junit.Test;
 public class WordTest {
 
     @Test
-    public void shouldReturnPassedValues(){
+    public void shouldReturnPassedValues() {
         // given
         final long id1 = 1;
         final String value1 = "Yoda";
@@ -19,7 +19,7 @@ public class WordTest {
     }
 
     @Test
-    public void shouldHaveEqualHashCodesButNotBeEqual(){
+    public void shouldHaveEqualHashCodesButNotBeEqual() {
         // given
         final long id1 = 1;
         final String value1 = "Yoda";
@@ -36,7 +36,7 @@ public class WordTest {
     }
 
     @Test
-    public void shouldBeEqual(){
+    public void shouldBeEqual() {
         // given
         final long id1 = 1;
         final String value1 = "Yoda";

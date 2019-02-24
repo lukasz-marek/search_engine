@@ -6,6 +6,7 @@ import com.randomcorp.file.normalization.WhitespaceLineSplitter;
 import com.randomcorp.processing.vocabulary.VocabularyRegistry;
 import com.randomcorp.processing.vocabulary.VocabularyRegistryImpl;
 import com.randomcorp.processing.vocabulary.Word;
+import com.randomcorp.search.matching.Match;
 import com.randomcorp.search.matching.Matcher;
 import com.randomcorp.search.matching.Query;
 import com.randomcorp.search.matching.SequenceIdentifyingMatcher;
@@ -61,7 +62,7 @@ public class Launcher {
             System.out.print(PROMPT);
             input = inputSource.nextLine().trim();
 
-            if(input.length() == 0){
+            if (input.length() == 0) {
                 continue;
             }
 
@@ -86,7 +87,7 @@ public class Launcher {
         final Map<String, Integer> rankingResults = new ConcurrentHashMap<>();
 
         fileImages.parallelStream().forEach(fileImage -> {
-            final List<List<Long>> searchResult = searchEngine.search(fileImage, query);
+            final List<Match> searchResult = searchEngine.search(fileImage, query);
             final RankingResult rankingResult = rankingStrategy.rank(searchResult, query);
             rankingResults.put(fileImage.getName(), rankingResult.getValue());
         });

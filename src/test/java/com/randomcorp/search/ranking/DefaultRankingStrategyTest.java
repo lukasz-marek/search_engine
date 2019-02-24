@@ -6,6 +6,7 @@ import com.randomcorp.file.normalization.WhitespaceLineSplitter;
 import com.randomcorp.processing.vocabulary.IdentityWordNormalizer;
 import com.randomcorp.processing.vocabulary.VocabularyRegistry;
 import com.randomcorp.processing.vocabulary.VocabularyRegistryImpl;
+import com.randomcorp.search.matching.Match;
 import com.randomcorp.search.matching.Query;
 import com.randomcorp.search.matching.SequenceIdentifyingMatcher;
 import org.junit.Assert;
@@ -37,7 +38,7 @@ public class DefaultRankingStrategyTest {
                 .stream()
                 .map(registry::getRegisteredWord)
                 .collect(Collectors.toList()));
-        final List<List<Long>> result = matcher.search(fileImage, query);
+        final List<Match> result = matcher.search(fileImage, query);
 
         //when
         final RankingResult rankingResult = rankingStrategy.rank(result, query);
@@ -59,7 +60,7 @@ public class DefaultRankingStrategyTest {
                 .stream()
                 .map(registry::getRegisteredWord)
                 .collect(Collectors.toList()));
-        final List<List<Long>> result = matcher.search(fileImage, query);
+        final List<Match> result = matcher.search(fileImage, query);
 
         //when
         final RankingResult rankingResult = rankingStrategy.rank(result, query);
@@ -81,7 +82,7 @@ public class DefaultRankingStrategyTest {
                 .stream()
                 .map(registry::getRegisteredWord)
                 .collect(Collectors.toList()));
-        final List<List<Long>> result = matcher.search(fileImage, query);
+        final List<Match> result = matcher.search(fileImage, query);
 
         //when
         final RankingResult rankingResult = rankingStrategy.rank(result, query);
@@ -108,7 +109,7 @@ public class DefaultRankingStrategyTest {
                 .stream()
                 .map(registry::getRegisteredWord)
                 .collect(Collectors.toList()));
-        final List<List<Long>> result = matcher.search(fileImage, query);
+        final List<Match> result = matcher.search(fileImage, query);
 
         //when
         final RankingResult rankingResult = rankingStrategy.rank(result, query);
@@ -130,7 +131,7 @@ public class DefaultRankingStrategyTest {
                 .stream()
                 .map(registry::getRegisteredWord)
                 .collect(Collectors.toList()));
-        final List<List<Long>> result = matcher.search(fileImage, query);
+        final List<Match> result = matcher.search(fileImage, query);
 
         //when
         final RankingResult rankingResult = rankingStrategy.rank(result, query);
@@ -156,7 +157,7 @@ public class DefaultRankingStrategyTest {
                 .stream()
                 .map(registry::getRegisteredWord)
                 .collect(Collectors.toList()));
-        final List<List<Long>> result = matcher.search(fileImage, query);
+        final List<Match> result = matcher.search(fileImage, query);
 
         //when
         final RankingResult rankingResult = rankingStrategy.rank(result, query);
