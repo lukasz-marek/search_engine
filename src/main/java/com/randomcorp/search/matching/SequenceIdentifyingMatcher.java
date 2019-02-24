@@ -4,6 +4,7 @@ import com.randomcorp.file.image.FileImage;
 import com.randomcorp.processing.vocabulary.Word;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class SequenceIdentifyingMatcher implements Matcher {
@@ -21,17 +22,32 @@ public class SequenceIdentifyingMatcher implements Matcher {
         }
 
         final List<Match> matchData = new ArrayList<>();
+        int maxMatchLength = 0;
         for (int i = 0; i < query.getWords().size(); i++) {
-            final List<Match> match = match(i, queriedIndexes, query);
-            matchData.addAll(match);
+                final List<Match> matches = match(i, queriedIndexes, query);
+
+                if (!matches.isEmpty()) {
+                    final int bestMatchLength = matches.stream()
+                            .map(match -> match.getPlaces().size())
+                            .max(Comparator.naturalOrder())
+                            .get();
+                    maxMatchLength = Math.max(bestMatchLength, maxMatchLength);
+                }
+
+                matchData.addAll(matches);
         }
 
-        return Collections.unmodifiableList(matchData);
+        final int bestMatchLength = maxMatchLength;
+        final List<Match> bestMatches = matchData.stream()
+                .filter(match -> match.getPlaces().size() == bestMatchLength)
+                .collect(Collectors.toList());
+
+        return Collections.unmodifiableList(bestMatches);
     }
 
     private List<Match> match(int startIndex, Map<Word, Set<Long>> queriedIndexes, Query query) {
         final List<Set<Long>> matchingWords = new ArrayList<>();
-        for (Word word : query.getWords().subList(startIndex, query.getWords().size())) {
+        for (Word word : query.getWords().subList(startIndex, queriedIndexes.size())) {
             matchingWords.add(new HashSet<>(queriedIndexes.get(word)));
         }
 
@@ -69,6 +85,12 @@ public class SequenceIdentifyingMatcher implements Matcher {
             final Set<Long> possibleNextPositions = new HashSet<>(matchPrefixes.get(currentMatch.size()));
             final Set<Long> allNextPositions = getSuccessors(Collections.singleton(currentMatch.get(currentMatch.size() - 1)));
             possibleNextPositions.retainAll(allNextPositions);
+
+            if(possibleNextPositions.isEmpty()) {
+                matches.add(new Match(Collections.unmodifiableList(currentMatch)));
+                break;
+            }
+
 
             for (long nextPosition : possibleNextPositions) {
                 final List<Long> newMatch = new ArrayList<>(currentMatch);
