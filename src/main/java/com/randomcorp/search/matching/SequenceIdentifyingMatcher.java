@@ -24,21 +24,21 @@ public class SequenceIdentifyingMatcher implements Matcher {
         final List<Match> matchData = new ArrayList<>();
         int maxMatchLength = 0;
         for (int i = 0; i < query.getWords().size(); i++) {
-                final List<Match> matches = match(i, queriedIndexes, query);
+            final List<Match> matches = match(i, queriedIndexes, query);
 
-                if (!matches.isEmpty()) {
-                    final int bestMatchLength = matches.stream()
-                            .map(match -> match.getPlaces().size())
-                            .max(Comparator.naturalOrder())
-                            .get();
-                    maxMatchLength = Math.max(bestMatchLength, maxMatchLength);
-                }
+            if (!matches.isEmpty()) {
+                final int bestMatchLength = matches.stream()
+                        .map(match -> match.getPlaces().size())
+                        .max(Comparator.naturalOrder())
+                        .get();
+                maxMatchLength = Math.max(bestMatchLength, maxMatchLength);
+            }
 
-                matchData.addAll(matches);
-                if (maxMatchLength >= query.getWords().size() - i){
-                    // there's no way to obtain a better result, so the search may now terminate
-                    break;
-                }
+            matchData.addAll(matches);
+            if (maxMatchLength >= query.getWords().size() - i) {
+                // there's no way to obtain a better result, so the search may now terminate
+                break;
+            }
         }
 
         final int bestMatchLength = maxMatchLength;
@@ -52,7 +52,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
     private List<Match> match(int startIndex, Map<Word, Set<Long>> queriedIndexes, Query query) {
         final List<Set<Long>> matchingWords = new ArrayList<>();
         for (Word word : query.getWords().subList(startIndex, queriedIndexes.size())) {
-            matchingWords.add(new HashSet<>(queriedIndexes.get(word)));
+            matchingWords.add(queriedIndexes.get(word));
         }
 
         return identifySequences(matchingWords);
@@ -83,37 +83,33 @@ public class SequenceIdentifyingMatcher implements Matcher {
 
             if (currentMatch.size() == matchPrefixes.size()) {
                 matches.add(new Match(Collections.unmodifiableList(currentMatch)));
-                break;
+                continue;
             }
 
-            final Set<Long> possibleNextPositions = new HashSet<>(matchPrefixes.get(currentMatch.size()));
-            final Set<Long> allNextPositions = getSuccessors(Collections.singleton(currentMatch.get(currentMatch.size() - 1)));
-            possibleNextPositions.retainAll(allNextPositions);
+            final Set<Long> possibleNextPositions = matchPrefixes.get(currentMatch.size());
+            final long lastPosition = currentMatch.get(currentMatch.size() - 1);
 
-            if(possibleNextPositions.isEmpty()) {
+            long successor = -1;
+            for (int i = 1; i <= MAX_GAP; i++) {
+                successor = lastPosition + i;
+                if (possibleNextPositions.contains(successor)) {
+                    break;
+                } else {
+                    successor = -1;
+                }
+            }
+
+            if (successor < 0) {
                 matches.add(new Match(Collections.unmodifiableList(currentMatch)));
-                break;
+                continue;
             }
 
-
-            for (long nextPosition : possibleNextPositions) {
-                final List<Long> newMatch = new ArrayList<>(currentMatch);
-                newMatch.add(nextPosition);
-                possibleMatches.add(newMatch);
-            }
+            final List<Long> newMatch = new ArrayList<>(currentMatch);
+            newMatch.add(successor);
+            possibleMatches.add(newMatch);
         }
 
         return matches;
-    }
-
-    private Set<Long> getSuccessors(Set<Long> currentPositions) {
-        final Set<Long> successors = new HashSet<>();
-        for (long current : currentPositions) {
-            for (int i = 1; i <= MAX_GAP; i++) {
-                successors.add(current + i);
-            }
-        }
-        return Collections.unmodifiableSet(successors);
     }
 
 }
