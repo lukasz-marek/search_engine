@@ -24,7 +24,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
         final List<Match> matchData = new ArrayList<>();
         int maxMatchLength = 0;
         for (int i = 0; i < query.getWords().size(); i++) {
-            final List<Match> matches = match(i, queriedIndexes, query);
+            final List<Match> matches = match(i, maxMatchLength, queriedIndexes, query);
 
             if (!matches.isEmpty()) {
                 final int bestMatchLength = matches.stream()
@@ -34,7 +34,8 @@ public class SequenceIdentifyingMatcher implements Matcher {
                 maxMatchLength = Math.max(bestMatchLength, maxMatchLength);
             }
 
-            matchData.addAll(matches);
+            final int bestMatchLength = maxMatchLength;
+            matchData.addAll(matches.stream().filter(match -> match.getPlaces().size() == bestMatchLength).collect(Collectors.toList()));
             if (maxMatchLength >= query.getWords().size() - i) {
                 // there's no way to obtain a better result, so the search may now terminate
                 break;
@@ -49,16 +50,16 @@ public class SequenceIdentifyingMatcher implements Matcher {
         return Collections.unmodifiableList(bestMatches);
     }
 
-    private List<Match> match(int startIndex, Map<Word, Set<Long>> queriedIndexes, Query query) {
+    private List<Match> match(int startIndex, int currentBestMatchLength, Map<Word, Set<Long>> queriedIndexes, Query query) {
         final List<Set<Long>> matchingWords = new ArrayList<>();
-        for (Word word : query.getWords().subList(startIndex, queriedIndexes.size())) {
+        for (Word word : query.getWords().subList(startIndex, query.getWords().size())) {
             matchingWords.add(queriedIndexes.get(word));
         }
 
-        return identifySequences(matchingWords);
+        return identifySequences(matchingWords, currentBestMatchLength);
     }
 
-    private List<Match> identifySequences(List<Set<Long>> matchingWords) {
+    private List<Match> identifySequences(List<Set<Long>> matchingWords, int currentBestMatchLength) {
         final List<Set<Long>> matchPrefixes = new ArrayList<>();
         for (Set<Long> indexes : matchingWords) {
             if (indexes.isEmpty()) {
@@ -82,25 +83,22 @@ public class SequenceIdentifyingMatcher implements Matcher {
             final List<Long> currentMatch = possibleMatches.pop();
 
             if (currentMatch.size() == matchPrefixes.size()) {
-                matches.add(new Match(Collections.unmodifiableList(currentMatch)));
+                currentBestMatchLength = Math.max(currentBestMatchLength, currentMatch.size());
+                if (currentMatch.size() >= currentBestMatchLength) {
+                    matches.add(new Match(Collections.unmodifiableList(currentMatch)));
+                }
                 continue;
             }
 
             final Set<Long> possibleNextPositions = matchPrefixes.get(currentMatch.size());
             final long lastPosition = currentMatch.get(currentMatch.size() - 1);
 
-            long successor = -1;
-            for (int i = 1; i <= MAX_GAP; i++) {
-                successor = lastPosition + i;
-                if (possibleNextPositions.contains(successor)) {
-                    break;
-                } else {
-                    successor = -1;
-                }
-            }
-
+            long successor = getSuccessor(lastPosition, possibleNextPositions);
             if (successor < 0) {
-                matches.add(new Match(Collections.unmodifiableList(currentMatch)));
+                currentBestMatchLength = Math.max(currentBestMatchLength, currentMatch.size());
+                if (currentMatch.size() >= currentBestMatchLength) {
+                    matches.add(new Match(Collections.unmodifiableList(currentMatch)));
+                }
                 continue;
             }
 
@@ -110,6 +108,19 @@ public class SequenceIdentifyingMatcher implements Matcher {
         }
 
         return matches;
+    }
+
+    private long getSuccessor(long lastPosition, Set<Long> possibleNextPositions) {
+        long successor = -1;
+        for (int i = 1; i <= MAX_GAP; i++) {
+            successor = lastPosition + i;
+            if (possibleNextPositions.contains(successor)) {
+                break;
+            } else {
+                successor = -1;
+            }
+        }
+        return successor;
     }
 
 }
