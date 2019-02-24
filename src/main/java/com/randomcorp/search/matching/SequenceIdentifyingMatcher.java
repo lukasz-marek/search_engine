@@ -62,7 +62,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
             final List<Long> currentMatch = possibleMatches.pop();
 
             if (currentMatch.size() == matchPrefixes.size()) {
-                matches.add(new Match(currentMatch));
+                matches.add(new Match(Collections.unmodifiableList(currentMatch)));
                 break;
             }
 
