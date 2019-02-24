@@ -104,7 +104,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
 
             final List<Long> newMatch = new ArrayList<>(currentMatch);
             newMatch.add(successor);
-            possibleMatches.add(newMatch);
+            possibleMatches.push(newMatch);
         }
 
         return matches;
