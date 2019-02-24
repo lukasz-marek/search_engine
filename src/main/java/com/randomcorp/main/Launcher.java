@@ -83,7 +83,7 @@ public class Launcher {
                 .map(registry::getRegisteredWord)
                 .collect(Collectors.toList());
 
-        final Query query = new Query(queryContents);
+        final Query query = new Query(Collections.unmodifiableList(queryContents));
         final Map<String, Integer> rankingResults = new ConcurrentHashMap<>();
 
         fileImages.parallelStream().forEach(fileImage -> {
