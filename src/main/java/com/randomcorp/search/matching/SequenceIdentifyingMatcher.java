@@ -26,7 +26,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
             matchData.addAll(match);
         }
 
-        return matchData;
+        return Collections.unmodifiableList(matchData);
     }
 
     private List<Match> match(int startIndex, Map<Word, Set<Long>> queriedIndexes, Query query) {
