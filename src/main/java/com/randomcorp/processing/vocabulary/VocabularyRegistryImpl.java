@@ -21,10 +21,6 @@ public final class VocabularyRegistryImpl implements VocabularyRegistry {
     public Word registerAsWord(String word) {
         word = wordNormalizer.normalize(word);
 
-        if (idRegistry.containsKey(word)) {
-            return idRegistry.get(word);
-        }
-
         return registerIfAbsent(word);
     }
 
@@ -42,14 +38,15 @@ public final class VocabularyRegistryImpl implements VocabularyRegistry {
          * but this would mean that some values of idGenerator would be unused.
          * Therefore, a minimal amount of synchronization is required
          */
-        synchronized (idRegistry) {
-            if (!idRegistry.containsKey(word)) {
-                final Word newWord = new Word(idGenerator.getAndIncrement(), word);
-                idRegistry.put(word, newWord);
-                return newWord;
+        if(!idRegistry.containsKey(word)) {
+            synchronized (idRegistry) {
+                if (!idRegistry.containsKey(word)) {
+                    final Word newWord = new Word(idGenerator.getAndIncrement(), word);
+                    idRegistry.put(word, newWord);
+                    return newWord;
+                }
             }
         }
-
         return idRegistry.get(word);
     }
 }
