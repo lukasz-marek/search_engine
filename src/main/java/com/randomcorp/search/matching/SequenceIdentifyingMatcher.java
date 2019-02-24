@@ -69,7 +69,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
             matchPrefixes.add(indexes);
         }
 
-        if (matchPrefixes.isEmpty()) {
+        if (matchPrefixes.isEmpty() || matchPrefixes.size() < currentBestMatchLength) {
             return Collections.emptyList();
         }
 
