@@ -41,7 +41,7 @@ public class SequenceIdentifyingMatcherTest {
         //then
         Assert.assertFalse(result.isEmpty());
         Assert.assertEquals(query.getWords().size(),
-                result.stream().map(Match::getPlaces).map(List::size).max(Comparator.naturalOrder()).get().longValue());
+                result.stream().map(Match::getOccurrences).map(List::size).max(Comparator.naturalOrder()).get().longValue());
 
     }
 
@@ -65,7 +65,7 @@ public class SequenceIdentifyingMatcherTest {
         //then
         Assert.assertFalse(result.isEmpty());
         Assert.assertEquals(query.getWords().size(),
-                result.stream().map(Match::getPlaces).map(List::size).max(Comparator.naturalOrder()).get().longValue());
+                result.stream().map(Match::getOccurrences).map(List::size).max(Comparator.naturalOrder()).get().longValue());
     }
 
     @Test
@@ -109,7 +109,7 @@ public class SequenceIdentifyingMatcherTest {
         //then
         Assert.assertFalse(result.isEmpty());
         Assert.assertEquals(query.getWords().size(),
-                result.stream().map(Match::getPlaces).map(List::size).max(Comparator.naturalOrder()).get().longValue());
+                result.stream().map(Match::getOccurrences).map(List::size).max(Comparator.naturalOrder()).get().longValue());
     }
 
     @Test
@@ -132,7 +132,7 @@ public class SequenceIdentifyingMatcherTest {
         //then
         Assert.assertFalse(result.isEmpty());
         Assert.assertEquals(2,
-                result.stream().map(Match::getPlaces).map(List::size).max(Comparator.naturalOrder()).get().longValue());
+                result.stream().map(Match::getOccurrences).map(List::size).max(Comparator.naturalOrder()).get().longValue());
     }
 
     @Test
@@ -155,7 +155,7 @@ public class SequenceIdentifyingMatcherTest {
         //then
         Assert.assertFalse(result.isEmpty());
         Assert.assertEquals(2,
-                result.stream().map(Match::getPlaces).map(List::size).max(Comparator.naturalOrder()).get().longValue());
+                result.stream().map(Match::getOccurrences).map(List::size).max(Comparator.naturalOrder()).get().longValue());
     }
 
     @Test
@@ -178,6 +178,6 @@ public class SequenceIdentifyingMatcherTest {
         //then
         Assert.assertFalse(result.isEmpty());
         Assert.assertEquals(3,
-                result.stream().map(Match::getPlaces).map(List::size).max(Comparator.naturalOrder()).get().longValue());
+                result.stream().map(Match::getOccurrences).map(List::size).max(Comparator.naturalOrder()).get().longValue());
     }
 }

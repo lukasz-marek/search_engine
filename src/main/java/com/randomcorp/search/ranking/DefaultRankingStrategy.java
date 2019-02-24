@@ -11,7 +11,7 @@ public class DefaultRankingStrategy implements RankingStrategy {
 
     @Override
     public RankingResult rank(List<Match> matches, Query query) {
-        final Optional<Integer> longestMatch = matches.stream().map(Match::getPlaces).map(List::size).max(Comparator.naturalOrder());
+        final Optional<Integer> longestMatch = matches.stream().map(Match::getOccurrences).map(List::size).max(Comparator.naturalOrder());
 
         if (!longestMatch.isPresent()) {
             return new RankingResult(0);
@@ -24,7 +24,7 @@ public class DefaultRankingStrategy implements RankingStrategy {
     }
 
     protected RankingResult compute(List<Match> matches, Query query) {
-        final int longestMatch = matches.stream().map(Match::getPlaces).map(List::size).max(Comparator.naturalOrder()).get();
+        final int longestMatch = matches.stream().map(Match::getOccurrences).map(List::size).max(Comparator.naturalOrder()).get();
 
         final double coverage = ((double) longestMatch) / ((double) query.getWords().size());
         final int rank = (int) (coverage * 100.0);

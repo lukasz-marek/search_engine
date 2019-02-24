@@ -4,13 +4,13 @@ import java.util.List;
 
 public final class Match {
 
-    private final List<Long> places;
+    private final List<Long> occurrences;
 
-    public Match(List<Long> places) {
-        this.places = places;
+    public Match(List<Long> occurrences) {
+        this.occurrences = occurrences;
     }
 
-    public List<Long> getPlaces() {
-        return places;
+    public List<Long> getOccurrences() {
+        return occurrences;
     }
 }

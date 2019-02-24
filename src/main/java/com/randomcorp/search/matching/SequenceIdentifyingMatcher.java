@@ -28,14 +28,14 @@ public class SequenceIdentifyingMatcher implements Matcher {
 
             if (!matches.isEmpty()) {
                 final int bestMatchLength = matches.stream()
-                        .map(match -> match.getPlaces().size())
+                        .map(match -> match.getOccurrences().size())
                         .max(Comparator.naturalOrder())
                         .get();
                 maxMatchLength = Math.max(bestMatchLength, maxMatchLength);
             }
 
             final int bestMatchLength = maxMatchLength;
-            matchData.addAll(matches.stream().filter(match -> match.getPlaces().size() == bestMatchLength).collect(Collectors.toList()));
+            matchData.addAll(matches.stream().filter(match -> match.getOccurrences().size() == bestMatchLength).collect(Collectors.toList()));
             if (maxMatchLength >= query.getWords().size() - i) {
                 // there's no way to obtain a better result, so the search may now terminate
                 break;
@@ -44,7 +44,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
 
         final int bestMatchLength = maxMatchLength;
         final List<Match> bestMatches = matchData.stream()
-                .filter(match -> match.getPlaces().size() == bestMatchLength)
+                .filter(match -> match.getOccurrences().size() == bestMatchLength)
                 .collect(Collectors.toList());
 
         return Collections.unmodifiableList(bestMatches);
