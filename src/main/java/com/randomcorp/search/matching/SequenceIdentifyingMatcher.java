@@ -87,7 +87,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
             if (currentMatch.size() == matchingWords.size()) {
                 currentBestMatchLength = Math.max(currentBestMatchLength, currentMatch.size());
                 if (currentMatch.size() >= currentBestMatchLength) {
-                    matches.add(new Match(Collections.unmodifiableList(currentMatch)));
+                    matches.add(new Match(currentMatch));
                 }
                 continue;
             }
@@ -99,7 +99,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
             if (successor < 0) {
                 currentBestMatchLength = Math.max(currentBestMatchLength, currentMatch.size());
                 if (currentMatch.size() >= currentBestMatchLength) {
-                    matches.add(new Match(Collections.unmodifiableList(currentMatch)));
+                    matches.add(new Match(currentMatch));
                 }
                 continue;
             }
