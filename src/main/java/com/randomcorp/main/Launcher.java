@@ -41,7 +41,6 @@ public class Launcher {
 
         final VocabularyRegistry registry = new VocabularyRegistryImpl(String::trim);
         final List<FileImage> fileImages = Arrays.stream(contents)
-                .parallel()
                 .filter(File::isFile)
                 .filter(file -> file.getName().endsWith(TEXT_FILE_SUFFIX))
                 .filter(file -> !file.isHidden())
@@ -86,7 +85,7 @@ public class Launcher {
         final Query query = new Query(queryContents);
         final Map<String, Integer> rankingResults = new ConcurrentHashMap<>();
 
-        fileImages.parallelStream().forEach(fileImage -> {
+        fileImages.forEach(fileImage -> {
             final List<Match> searchResult = searchEngine.search(fileImage, query);
             final RankingResult rankingResult = rankingStrategy.rank(searchResult, query);
             rankingResults.put(fileImage.getName(), rankingResult.getValue());
