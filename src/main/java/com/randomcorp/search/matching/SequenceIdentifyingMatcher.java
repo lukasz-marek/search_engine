@@ -117,17 +117,13 @@ public class SequenceIdentifyingMatcher implements Matcher {
             return;
         }
 
-        final List<CompletableFuture<Void>> childTasks = new ArrayList<>();
-        for (long successor : successors) {
-            final List<Long> newMatch = new ArrayList<>(currentMatch);
-            newMatch.add(successor);
-
-            final CompletableFuture<Void> newTask = CompletableFuture.runAsync(() ->
-                            processItem(Collections.unmodifiableList(newMatch), matchingWords, currentBestMatchLength, tasks, matches)
-                    , executor);
-            childTasks.add(newTask);
-        }
-        tasks.add(CompletableFuture.allOf(childTasks.toArray(new CompletableFuture[0])));
+        tasks.add(CompletableFuture.runAsync(() -> {
+            for (long successor : successors) {
+                final List<Long> newMatch = new ArrayList<>(currentMatch);
+                newMatch.add(successor);
+                processItem(Collections.unmodifiableList(newMatch), matchingWords, currentBestMatchLength, tasks, matches);
+            }
+        }, executor));
     }
 
     private Set<Long> getSuccessors(long lastPosition, Set<Long> possibleNextPositions) {
