@@ -1,8 +1,9 @@
 package com.randomcorp.processing.vocabulary;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public final class Word {
+public final class Word implements Serializable {
 
     public String getValue() {
         return value;

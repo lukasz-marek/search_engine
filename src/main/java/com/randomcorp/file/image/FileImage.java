@@ -4,20 +4,21 @@ import com.randomcorp.file.normalization.LineSplitter;
 import com.randomcorp.processing.vocabulary.VocabularyRegistry;
 import com.randomcorp.processing.vocabulary.Word;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public final class FileImage {
 
     private final String name;
 
-    private final Map<Word, Set<Long>> wordOccurrences;
+    // private final Map<Word, Set<Long>> wordOccurrences;
 
-    private FileImage(List<List<Word>> lines, String name) {
+    private final byte[] compressedFile;
+
+    private FileImage(List<List<Word>> lines, String name) throws IOException {
 
         this.name = name;
 
@@ -33,7 +34,14 @@ public final class FileImage {
             }
         }
         indexes.replaceAll((k, v) -> Collections.unmodifiableSet(v));
-        this.wordOccurrences = Collections.unmodifiableMap(indexes);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        GZIPOutputStream gzipOut = new GZIPOutputStream(baos);
+        ObjectOutputStream objectOut = new ObjectOutputStream(gzipOut);
+        objectOut.writeObject(indexes);
+        objectOut.writeObject(indexes);
+        objectOut.close();
+        this.compressedFile = baos.toByteArray();
     }
 
 
@@ -55,7 +63,34 @@ public final class FileImage {
     }
 
     public Map<Word, Set<Long>> getWordOccurrences() {
-        return wordOccurrences;
+        ByteArrayInputStream bais = new ByteArrayInputStream(compressedFile);
+        GZIPInputStream gzipIn = null;
+        try {
+            gzipIn = new GZIPInputStream(bais);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ObjectInputStream objectIn = null;
+        try {
+            objectIn = new ObjectInputStream(gzipIn);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Map<Word, Set<Long>> wordOccurrences = null;
+        try {
+            wordOccurrences = (Map<Word, Set<Long>>) objectIn.readObject();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            objectIn.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return Collections.unmodifiableMap(wordOccurrences);
     }
 
     public String getName() {
