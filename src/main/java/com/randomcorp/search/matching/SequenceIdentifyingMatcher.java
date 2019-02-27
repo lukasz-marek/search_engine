@@ -2,7 +2,6 @@ package com.randomcorp.search.matching;
 
 import com.randomcorp.file.image.FileImage;
 import com.randomcorp.processing.vocabulary.Word;
-import sun.nio.ch.ThreadPool;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -86,9 +85,9 @@ public class SequenceIdentifyingMatcher implements Matcher {
         }
 
         try {
-
-            while (tasks.stream().filter(CompletableFuture::isDone).count() < tasks.size()) {
-                Thread.sleep(500);
+            while (0 < tasks.size()) {
+                tasks.removeIf(CompletableFuture::isDone);
+                Thread.sleep(50);
             }
 
         } catch (InterruptedException e) {
@@ -117,13 +116,13 @@ public class SequenceIdentifyingMatcher implements Matcher {
             return;
         }
 
-        tasks.add(CompletableFuture.runAsync(() -> {
-            for (long successor : successors) {
-                final List<Long> newMatch = new ArrayList<>(currentMatch);
-                newMatch.add(successor);
-                processItem(Collections.unmodifiableList(newMatch), matchingWords, currentBestMatchLength, tasks, matches);
-            }
-        }, executor));
+        for (long successor : successors) {
+            final List<Long> newMatch = new ArrayList<>(currentMatch);
+            newMatch.add(successor);
+            tasks.add(CompletableFuture.runAsync(()
+                            -> processItem(Collections.unmodifiableList(newMatch), matchingWords, currentBestMatchLength, tasks, matches),
+                    executor));
+        }
     }
 
     private Set<Long> getSuccessors(long lastPosition, Set<Long> possibleNextPositions) {
