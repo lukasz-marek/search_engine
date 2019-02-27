@@ -14,11 +14,9 @@ public final class FileImage {
 
     private final String name;
 
-    // private final Map<Word, Set<Long>> wordOccurrences;
-
     private final byte[] compressedFile;
 
-    private FileImage(List<List<Word>> lines, String name) throws IOException {
+    private FileImage(List<List<Word>> lines, String name) {
 
         this.name = name;
 
@@ -35,12 +33,16 @@ public final class FileImage {
         }
         indexes.replaceAll((k, v) -> Collections.unmodifiableSet(v));
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        GZIPOutputStream gzipOut = new GZIPOutputStream(baos);
-        ObjectOutputStream objectOut = new ObjectOutputStream(gzipOut);
-        objectOut.writeObject(indexes);
-        objectOut.writeObject(indexes);
-        objectOut.close();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            final GZIPOutputStream gzipOut = new GZIPOutputStream(baos);
+            final ObjectOutputStream objectOut = new ObjectOutputStream(gzipOut);
+
+            objectOut.writeObject(indexes);
+            objectOut.close();
+        } catch (IOException ex) {
+            throw new IllegalStateException("Could not serialize file.");
+        }
         this.compressedFile = baos.toByteArray();
     }
 
@@ -63,34 +65,14 @@ public final class FileImage {
     }
 
     public Map<Word, Set<Long>> getWordOccurrences() {
-        ByteArrayInputStream bais = new ByteArrayInputStream(compressedFile);
-        GZIPInputStream gzipIn = null;
+        final ByteArrayInputStream bais = new ByteArrayInputStream(compressedFile);
         try {
-            gzipIn = new GZIPInputStream(bais);
-        } catch (IOException e) {
-            e.printStackTrace();
+            GZIPInputStream gzipIn = new GZIPInputStream(bais);
+            ObjectInputStream objectIn = new ObjectInputStream(gzipIn);
+            return Collections.unmodifiableMap((Map<Word, Set<Long>>) objectIn.readObject());
+        }catch(IOException | ClassNotFoundException ex){
+            throw new IllegalStateException("Could not deserialize compressed file.");
         }
-        ObjectInputStream objectIn = null;
-        try {
-            objectIn = new ObjectInputStream(gzipIn);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Map<Word, Set<Long>> wordOccurrences = null;
-        try {
-            wordOccurrences = (Map<Word, Set<Long>>) objectIn.readObject();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        try {
-            objectIn.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return Collections.unmodifiableMap(wordOccurrences);
     }
 
     public String getName() {
