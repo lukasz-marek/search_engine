@@ -78,7 +78,7 @@ public class SequenceIdentifyingMatcher implements Matcher {
     }
 
     private List<Match> identifySequencesParallel(List<Set<Long>> matchingWords, int currentBestMatchLength) {
-        final List<CompletableFuture<Void>> tasks = Collections.synchronizedList(new ArrayList<>());
+        final List<CompletableFuture<Void>> tasks = new CopyOnWriteArrayList<>();
         final List<Match> matches = Collections.synchronizedList(new ArrayList<>());
 
         for (long index : matchingWords.get(0)) {
