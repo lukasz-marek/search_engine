@@ -2,14 +2,18 @@ package com.randomcorp.search.matching;
 
 import com.randomcorp.file.image.FileImage;
 import com.randomcorp.processing.vocabulary.Word;
+import sun.nio.ch.ThreadPool;
 
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 
 public class SequenceIdentifyingMatcher implements Matcher {
 
     private final int MAX_GAP = 3;
+
+    private final ExecutorService executor = Executors.newWorkStealingPool();
 
     @Override
     public List<Match> search(FileImage fileImage, Query query) {
@@ -70,47 +74,60 @@ public class SequenceIdentifyingMatcher implements Matcher {
             orderedOccurrences.add(occurrences);
         }
 
-        return orderedOccurrences.isEmpty() ? Collections.emptyList() : identifySequences(orderedOccurrences, currentBestMatchLength);
+        return orderedOccurrences.isEmpty() ? Collections.emptyList() : identifySequencesParallel(orderedOccurrences, currentBestMatchLength);
     }
 
-    private List<Match> identifySequences(List<Set<Long>> matchingWords, int currentBestMatchLength) {
+    private List<Match> identifySequencesParallel(List<Set<Long>> matchingWords, int currentBestMatchLength) {
+        final List<CompletableFuture<Void>> tasks = Collections.synchronizedList(new ArrayList<>());
+        final List<Match> matches = Collections.synchronizedList(new ArrayList<>());
 
-        final Stack<List<Long>> possibleMatches = new Stack<>();
         for (long index : matchingWords.get(0)) {
-            possibleMatches.add(Collections.singletonList(index));
+            tasks.add(CompletableFuture.runAsync(() -> processItem(Collections.singletonList(index), matchingWords, currentBestMatchLength, tasks, matches)));
         }
 
-        final List<Match> matches = new ArrayList<>();
-        while (!possibleMatches.isEmpty()) {
-            final List<Long> currentMatch = possibleMatches.pop();
+        try {
 
-            if (currentMatch.size() == matchingWords.size()) {
-                currentBestMatchLength = Math.max(currentBestMatchLength, currentMatch.size());
-                matches.add(new Match(currentMatch));
-                continue;
+            while (tasks.stream().anyMatch(task -> !task.isDone())) {
+                Thread.sleep(5);
             }
-
-            final Set<Long> possibleNextPositions = matchingWords.get(currentMatch.size());
-            final long lastPosition = currentMatch.get(currentMatch.size() - 1);
-
-            final Set<Long> successors = getSuccessors(lastPosition, possibleNextPositions);
-
-            if (successors.isEmpty()) {
-                currentBestMatchLength = Math.max(currentBestMatchLength, currentMatch.size());
-                if (currentMatch.size() >= currentBestMatchLength) {
-                    matches.add(new Match(currentMatch));
-                }
-                continue;
-            }
-
-            for (long successor : successors) {
-                final List<Long> newMatch = new ArrayList<>(currentMatch);
-                newMatch.add(successor);
-                possibleMatches.push(newMatch);
-            }
+        } catch (InterruptedException e) {
+            // should never happen
+            tasks.forEach(task -> task.cancel(true));
         }
 
         return matches;
+    }
+
+    private void processItem(List<Long> currentMatch, List<Set<Long>> matchingWords, int currentBestMatchLength, List<CompletableFuture<Void>> tasks, List<Match> matches) {
+        if (currentMatch.size() == matchingWords.size()) {
+            matches.add(new Match(currentMatch));
+            return;
+        }
+
+        final Set<Long> possibleNextPositions = matchingWords.get(currentMatch.size());
+        final long lastPosition = currentMatch.get(currentMatch.size() - 1);
+
+        final Set<Long> successors = getSuccessors(lastPosition, possibleNextPositions);
+
+        if (successors.isEmpty()) {
+            if (currentMatch.size() >= currentBestMatchLength) {
+                matches.add(new Match(currentMatch));
+            }
+            return;
+        }
+
+        for (long successor : successors) {
+            final CompletableFuture<Void> successionTask = CompletableFuture.runAsync(() -> {
+                final List<Long> newMatch = new ArrayList<>(currentMatch);
+                newMatch.add(successor);
+
+                final CompletableFuture<Void> newTask = CompletableFuture.runAsync(() ->
+                                processItem(Collections.unmodifiableList(newMatch), matchingWords, currentBestMatchLength, tasks, matches)
+                        , executor);
+                tasks.add(newTask);
+            }, executor);
+            tasks.add(successionTask);
+        }
     }
 
     private Set<Long> getSuccessors(long lastPosition, Set<Long> possibleNextPositions) {
