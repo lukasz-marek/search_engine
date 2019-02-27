@@ -82,15 +82,24 @@ public class SequenceIdentifyingMatcher implements Matcher {
         final List<Match> matches = Collections.synchronizedList(new ArrayList<>());
 
         for (long index : matchingWords.get(0)) {
-            tasks.add(CompletableFuture.runAsync(()
-                    -> processItem(Collections.singletonList(index), matchingWords, currentBestMatchLength, matches), executor));
+            tasks.add(CompletableFuture.runAsync(() -> processItem(Collections.singletonList(index), matchingWords, currentBestMatchLength, tasks, matches)));
         }
 
-        CompletableFuture.allOf(tasks.toArray(new CompletableFuture[0])).join();
+        try {
+
+            while (tasks.stream().filter(CompletableFuture::isDone).count() < tasks.size()) {
+                Thread.sleep(10);
+            }
+
+        } catch (InterruptedException e) {
+            // should never happen
+            tasks.forEach(task -> task.cancel(true));
+        }
+
         return matches;
     }
 
-    private void processItem(List<Long> currentMatch, List<Set<Long>> matchingWords, int currentBestMatchLength, List<Match> matches) {
+    private void processItem(List<Long> currentMatch, List<Set<Long>> matchingWords, int currentBestMatchLength, List<CompletableFuture<Void>> tasks, List<Match> matches) {
         if (currentMatch.size() == matchingWords.size()) {
             matches.add(new Match(currentMatch));
             return;
@@ -108,19 +117,18 @@ public class SequenceIdentifyingMatcher implements Matcher {
             return;
         }
 
-        final List<CompletableFuture<Void>> childTasks = new ArrayList<>();
         for (long successor : successors) {
-            final List<Long> newMatch = new ArrayList<>(currentMatch);
-            newMatch.add(successor);
+            final CompletableFuture<Void> successionTask = CompletableFuture.runAsync(() -> {
+                final List<Long> newMatch = new ArrayList<>(currentMatch);
+                newMatch.add(successor);
 
-            final CompletableFuture<Void> newTask = CompletableFuture.runAsync(() ->
-                            processItem(Collections.unmodifiableList(newMatch), matchingWords, currentBestMatchLength, matches)
-                    , executor);
-
-            childTasks.add(newTask);
+                final CompletableFuture<Void> newTask = CompletableFuture.runAsync(() ->
+                                processItem(Collections.unmodifiableList(newMatch), matchingWords, currentBestMatchLength, tasks, matches)
+                        , executor);
+                tasks.add(newTask);
+            }, executor);
+            tasks.add(successionTask);
         }
-
-        CompletableFuture.allOf(childTasks.toArray(new CompletableFuture[0])).join();
     }
 
     private Set<Long> getSuccessors(long lastPosition, Set<Long> possibleNextPositions) {
