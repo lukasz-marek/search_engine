@@ -87,9 +87,10 @@ public class SequenceIdentifyingMatcher implements Matcher {
 
         try {
 
-            while (tasks.stream().anyMatch(task -> !task.isDone())) {
-                Thread.sleep(5);
+            while (tasks.stream().filter(CompletableFuture::isDone).count() < tasks.size()) {
+                Thread.sleep(10);
             }
+
         } catch (InterruptedException e) {
             // should never happen
             tasks.forEach(task -> task.cancel(true));
